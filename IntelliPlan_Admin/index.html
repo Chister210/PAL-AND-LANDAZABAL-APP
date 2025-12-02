@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <title>IntelliPlan Admin</title>
+    <link rel="icon" type="image/svg+xml" href="assets/logo.svg">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sidebar">
+        <div class="brand">
+          <img src="assets/logo.svg" alt="IntelliPlan Logo" class="logo" />
+          <div class="brand-text">
+            <h1>IntelliPlan</h1>
+            <span class="brand-subtitle">Admin Dashboard</span>
+          </div>
+        </div>
+        <nav>
+          <ul>
+            <li data-target="overview" class="active">Overview</li>
+            <li data-target="users">User Management</li>
+            <li data-target="tasks">Task Analytics</li>
+            <li data-target="techniques">Study Techniques</li>
+            <li data-target="gamification">Gamification</li>
+            <li data-target="subjects">Subjects</li>
+            <li data-target="feedback">Feedback</li>
+            <li data-target="system">System Logs</li>
+          </ul>
+        </nav>
+        <div class="sidebar-actions">
+          <button id="logoutBtn" class="sidebar-logout" aria-label="Log out">Log out</button>
+        </div>
+        <div class="sidebar-footer">
+          <small>v1.0.0</small>
+        </div>
+      </aside>
+
+      <main class="main">
+        <header class="topbar">
+            <div class="top-left">
+              <button id="menuToggle" class="menu-toggle" aria-label="Toggle menu">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="3" y1="12" x2="21" y2="12"></line>
+                  <line x1="3" y1="6" x2="21" y2="6"></line>
+                  <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+              </button>
+              <div class="brand-inline">
+                <img src="assets/logo.svg" alt="IntelliPlan Logo" class="logo-sm" />
+                <div class="title-wrapper">
+                  <div class="title">IntelliPlan</div>
+                  <div class="subtitle">Admin Portal</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="top-right">
+              <button id="themeToggle" class="theme-toggle" aria-label="Toggle light / dark">🌙</button>
+              <div class="avatar" title="Admin">A</div>
+            </div>
+          </header>
+
+        <section id="overview" class="panel active">
+          <h2>Dashboard</h2>
+          
+          <!-- Top Stats Row -->
+          <div class="stats-row">
+            <div class="stat-card stat-green">
+              <div class="stat-value" id="totalUsers">—</div>
+              <div class="stat-label">Total Users</div>
+            </div>
+            <div class="stat-card stat-red">
+              <div class="stat-value" id="activeToday">—</div>
+              <div class="stat-label">Active Today</div>
+            </div>
+            <div class="stat-card stat-blue">
+              <div class="stat-value" id="totalTasks">—</div>
+              <div class="stat-label">Total Tasks</div>
+            </div>
+            <div class="stat-card stat-yellow">
+              <div class="stat-value" id="tasksCompletedToday">—</div>
+              <div class="stat-label">Completed Today</div>
+            </div>
+          </div>
+
+          <!-- Charts Grid -->
+          <div class="dashboard-grid">
+            <div class="card chart-card chart-large">
+              <h4>Study Activity (Last 30 Days)</h4>
+              <canvas id="usageBar"></canvas>
+            </div>
+            <div class="card chart-card">
+              <h4>Study Techniques</h4>
+              <canvas id="techniquePie"></canvas>
+            </div>
+          </div>
+
+          <!-- Secondary Stats -->
+          <div class="secondary-stats">
+            <div class="stat-item">
+              <div class="stat-icon">📚</div>
+              <div class="stat-info">
+                <div class="stat-number" id="pomoSessions">—</div>
+                <div class="stat-text">Pomodoro Sessions</div>
+              </div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-icon">🧠</div>
+              <div class="stat-info">
+                <div class="stat-number" id="arTests">—</div>
+                <div class="stat-text">Active Recall</div>
+              </div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-icon">🔁</div>
+              <div class="stat-info">
+                <div class="stat-number" id="srCards">—</div>
+                <div class="stat-text">Spaced Rep Cards</div>
+              </div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-icon">🎯</div>
+              <div class="stat-info">
+                <div class="stat-number" id="totalStudyTime">—</div>
+                <div class="stat-text">Study Minutes</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Activity -->
+          <div class="card activity-card">
+            <h4>Recent Insights</h4>
+            <div id="recentInsights" class="insights-list"></div>
+          </div>
+        </section>
+
+        <section id="users" class="panel">
+          <h2>User Management</h2>
+          <div class="card table-card">
+            <div class="table-actions">
+              <input id="userSearch" placeholder="Search by name or email" />
+              <select id="filterTechnique">
+                <option value="all">All Users</option>
+                <option value="active">Active (7 days)</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </div>
+            <table id="userTable">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Streak</th>
+                  <th>XP</th>
+                  <th>Tasks</th>
+                  <th>Last Active</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+            <div id="userPagination" class="pagination"></div>
+          </div>
+        </section>
+
+        <section id="tasks" class="panel">
+          <h2>Task Analytics</h2>
+          <div class="charts">
+            <div class="card chart-card wide">
+              <h4>Tasks Created (last 30 days)</h4>
+              <canvas id="tasksTimeline"></canvas>
+            </div>
+            <div class="card chart-card">
+              <h4>Task Status</h4>
+              <canvas id="completionChart"></canvas>
+            </div>
+            <div class="card chart-card">
+              <h4>By Subject (Top 10)</h4>
+              <canvas id="subjectChart"></canvas>
+            </div>
+          </div>
+        </section>
+
+        <section id="techniques" class="panel">
+          <h2>Study Technique Performance</h2>
+          
+          <div class="stats-row">
+            <div class="stat-card stat-blue">
+              <div class="stat-icon">📚</div>
+              <div class="stat-value" id="pomoSessionsDetail">—</div>
+              <div class="stat-label">Pomodoro Sessions</div>
+            </div>
+            <div class="stat-card stat-green">
+              <div class="stat-icon">🔁</div>
+              <div class="stat-value" id="srCardsDetail">—</div>
+              <div class="stat-label">Flashcards Reviewed</div>
+            </div>
+            <div class="stat-card stat-yellow">
+              <div class="stat-icon">🧠</div>
+              <div class="stat-value" id="arTestsDetail">—</div>
+              <div class="stat-label">Active Recall Tests</div>
+            </div>
+          </div>
+
+          <div class="dashboard-grid">
+            <div class="card technique-card">
+              <h4>🍅 Pomodoro Details</h4>
+              <div class="technique-stats">
+                <div class="technique-stat">
+                  <span class="label">Sessions per day</span>
+                  <span class="value" id="pomoPerDay">—</span>
+                </div>
+                <div class="technique-stat">
+                  <span class="label">Avg session length</span>
+                  <span class="value" id="pomoLen">—</span>
+                </div>
+                <div class="technique-stat">
+                  <span class="label">Completion ratio</span>
+                  <span class="value" id="pomoComp">—</span>
+                </div>
+              </div>
+            </div>
+            <div class="card technique-card">
+              <h4>🔁 Spaced Repetition</h4>
+              <div class="technique-stats">
+                <div class="technique-stat">
+                  <span class="label">Cards reviewed</span>
+                  <span class="value" id="srCardsReviewed">—</span>
+                </div>
+                <div class="technique-stat">
+                  <span class="label">Accuracy rate</span>
+                  <span class="value" id="srAcc">—</span>
+                </div>
+              </div>
+            </div>
+            <div class="card technique-card">
+              <h4>🧠 Active Recall</h4>
+              <div class="technique-stats">
+                <div class="technique-stat">
+                  <span class="label">Tests completed</span>
+                  <span class="value" id="arTestsCompleted">—</span>
+                </div>
+                <div class="technique-stat">
+                  <span class="label">Success rate</span>
+                  <span class="value" id="arAcc">—</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="gamification" class="panel">
+          <h2>Gamification System</h2>
+          
+          <div class="card activity-card">
+            <h4>🏆 Top Achievements</h4>
+            <ul id="achievementsList" class="achievements-list"></ul>
+          </div>
+        </section>
+
+        <section id="subjects" class="panel">
+          <h2>Subjects & Curriculum</h2>
+          <div class="card modern-table-card">
+            <div class="table-header">
+              <h4>📚 All Subjects</h4>
+              <button id="addSubject" class="btn-primary">+ Add Subject</button>
+            </div>
+            <table id="subjectTable" class="modern-table">
+              <thead>
+                <tr><th>Code</th><th>Name</th><th>Category</th><th>Department</th><th>Color</th><th>Actions</th></tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="feedback" class="panel">
+          <h2>Feedback & Moderation</h2>
+          <div class="card modern-table-card">
+            <div class="table-header">
+              <h4>💬 User Feedback</h4>
+            </div>
+            <table id="feedbackTable" class="modern-table">
+              <thead><tr><th>ID</th><th>User</th><th>Type</th><th>Message</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead>
+              <tbody></tbody>
+            </table>
+            <div id="feedbackPagination" class="pagination"></div>
+          </div>
+        </section>
+
+        <section id="system" class="panel">
+          <h2>System Settings & Logs</h2>
+          <div class="card activity-card">
+            <h4>📋 Audit Logs</h4>
+            <div id="auditLogs" class="logs-modern"></div>
+            <div id="logsPagination" class="pagination"></div>
+          </div>
+        </section>
+
+        <footer class="footer">
+          <div class="footer-content">
+            <img src="assets/logo.svg" alt="IntelliPlan" class="footer-logo" />
+            <span>IntelliPlan Admin • v1.0</span>
+          </div>
+        </footer>
+      </main>
+    </div>
+
+      <!-- Confirmation modal -->
+      <div id="confirmModal" class="modal" aria-hidden="true">
+        <div class="modal-panel">
+          <h3 id="confirmTitle">Confirm</h3>
+          <p id="confirmMessage">Are you sure?</p>
+          <div class="modal-actions">
+            <button id="confirmCancel" class="btn">Cancel</button>
+            <button id="confirmOk" class="btn" style="background:var(--accent);color:#001">Confirm</button>
+          </div>
+        </div>
+      </div>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    
+    <script src="js/app.js?v=1.0.4"></script>
+  </body>
+</html>

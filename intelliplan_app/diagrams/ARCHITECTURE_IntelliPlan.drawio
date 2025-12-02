@@ -1,0 +1,206 @@
+<mxfile host="app.diagrams.net" modified="2024-01-01T00:00:00.000Z" agent="draw.io" version="22.1.0" etag="ARCHITECTURE_IntelliPlan">
+  <diagram name="System Architecture" id="architecture-intelliplan">
+    <mxGraphModel dx="1422" dy="794" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+        <!-- Title -->
+        <mxCell id="title-arch" value="&lt;b&gt;&lt;font style=&quot;font-size: 18px;&quot;&gt;IntelliPlan - System Architecture Design&lt;/font&gt;&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="350" y="20" width="500" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- Presentation Layer -->
+        <mxCell id="layer-presentation" value="&lt;b style=&quot;font-size: 14px;&quot;&gt;PRESENTATION LAYER&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;align=center;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="80" y="80" width="1000" height="140" as="geometry" />
+        </mxCell>
+
+        <!-- Presentation Components -->
+        <mxCell id="ui-auth" value="&lt;b&gt;Authentication UI&lt;/b&gt;&lt;br/&gt;Login/Register&lt;br/&gt;Screens" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="120" y="130" width="140" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ui-home" value="&lt;b&gt;Home Dashboard&lt;/b&gt;&lt;br/&gt;Main Screen&lt;br/&gt;Navigation" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="280" y="130" width="140" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ui-task" value="&lt;b&gt;Task Board UI&lt;/b&gt;&lt;br/&gt;Kanban View&lt;br/&gt;Task Management" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="440" y="130" width="140" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ui-study" value="&lt;b&gt;Study UI&lt;/b&gt;&lt;br/&gt;Session Screens&lt;br/&gt;Techniques" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="600" y="130" width="140" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ui-analytics" value="&lt;b&gt;Analytics UI&lt;/b&gt;&lt;br/&gt;Charts &amp; Reports&lt;br/&gt;Insights" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="760" y="130" width="140" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ui-admin" value="&lt;b&gt;Admin Panel&lt;/b&gt;&lt;br/&gt;Web Interface&lt;br/&gt;Dashboard" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="920" y="130" width="140" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- Application Layer -->
+        <mxCell id="layer-application" value="&lt;b style=&quot;font-size: 14px;&quot;&gt;APPLICATION LAYER (Business Logic)&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;verticalAlign=top;align=center;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="80" y="260" width="1000" height="260" as="geometry" />
+        </mxCell>
+
+        <!-- Service Components -->
+        <mxCell id="service-auth" value="&lt;b&gt;AuthService&lt;/b&gt;&lt;br/&gt;User Authentication&lt;br/&gt;Session Management&lt;br/&gt;Token Validation" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="120" y="310" width="140" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="service-task" value="&lt;b&gt;ScheduleService&lt;/b&gt;&lt;br/&gt;Task Management&lt;br/&gt;Class Schedule&lt;br/&gt;Assignments" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="280" y="310" width="140" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="service-study" value="&lt;b&gt;Study Services&lt;/b&gt;&lt;br/&gt;Pomodoro&lt;br/&gt;Spaced Repetition&lt;br/&gt;Active Recall" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="440" y="310" width="140" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="service-gamification" value="&lt;b&gt;GamificationService&lt;/b&gt;&lt;br/&gt;XP &amp; Levels&lt;br/&gt;Achievements&lt;br/&gt;Quests &amp; Streaks" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="600" y="310" width="140" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="service-analytics" value="&lt;b&gt;AnalyticsService&lt;/b&gt;&lt;br/&gt;Data Processing&lt;br/&gt;Pattern Analysis&lt;br/&gt;AI Recommendations" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="760" y="310" width="140" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="service-team" value="&lt;b&gt;TeamService&lt;/b&gt;&lt;br/&gt;Collaboration&lt;br/&gt;Team Management&lt;br/&gt;Shared Tasks" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="920" y="310" width="140" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- Controllers/Models -->
+        <mxCell id="controllers" value="&lt;b&gt;Controllers &amp; State Management&lt;/b&gt;&lt;br/&gt;Riverpod Providers, Notifiers, Controllers" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="120" y="420" width="300" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="models" value="&lt;b&gt;Data Models&lt;/b&gt;&lt;br/&gt;User, Task, Session, Achievement, etc." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="460" y="420" width="300" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="utils" value="&lt;b&gt;Utilities &amp; Helpers&lt;/b&gt;&lt;br/&gt;Validation, Formatters, Constants" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="800" y="420" width="260" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- Data Layer -->
+        <mxCell id="layer-data" value="&lt;b style=&quot;font-size: 14px;&quot;&gt;DATA LAYER&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;verticalAlign=top;align=center;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="80" y="560" width="1000" height="140" as="geometry" />
+        </mxCell>
+
+        <!-- Data Components -->
+        <mxCell id="firebase-auth" value="&lt;b&gt;Firebase Auth&lt;/b&gt;&lt;br/&gt;User Authentication&lt;br/&gt;Token Management" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="120" y="610" width="180" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="firestore" value="&lt;b&gt;Cloud Firestore&lt;/b&gt;&lt;br/&gt;NoSQL Database&lt;br/&gt;Real-time Sync" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="340" y="610" width="180" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="storage" value="&lt;b&gt;Firebase Storage&lt;/b&gt;&lt;br/&gt;Profile Images&lt;br/&gt;File Upload" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="560" y="610" width="180" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="local-storage" value="&lt;b&gt;Local Storage&lt;/b&gt;&lt;br/&gt;SharedPreferences&lt;br/&gt;Cache" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="780" y="610" width="180" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- External Services Layer -->
+        <mxCell id="layer-external" value="&lt;b style=&quot;font-size: 14px;&quot;&gt;EXTERNAL SERVICES&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;verticalAlign=top;align=center;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="80" y="740" width="1000" height="100" as="geometry" />
+        </mxCell>
+
+        <!-- External Components -->
+        <mxCell id="fcm" value="&lt;b&gt;Firebase Cloud&lt;br/&gt;Messaging (FCM)&lt;/b&gt;&lt;br/&gt;Push Notifications" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="180" y="780" width="200" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="analytics-ext" value="&lt;b&gt;Firebase Analytics&lt;/b&gt;&lt;br/&gt;Usage Tracking" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="440" y="780" width="200" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="crashlytics" value="&lt;b&gt;Crashlytics&lt;/b&gt;&lt;br/&gt;Error Reporting" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="700" y="780" width="200" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- Connections -->
+        <!-- UI to Services -->
+        <mxCell id="conn-ui-auth" value="" style="endArrow=classic;startArrow=classic;html=1;rounded=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeWidth=2;" edge="1" parent="1" source="ui-auth" target="service-auth">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="400" y="450" as="sourcePoint" />
+            <mxPoint x="450" y="400" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="conn-ui-task" value="" style="endArrow=classic;startArrow=classic;html=1;rounded=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeWidth=2;" edge="1" parent="1" source="ui-task" target="service-task">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="400" y="450" as="sourcePoint" />
+            <mxPoint x="450" y="400" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="conn-ui-study" value="" style="endArrow=classic;startArrow=classic;html=1;rounded=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeWidth=2;" edge="1" parent="1" source="ui-study" target="service-study">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="400" y="450" as="sourcePoint" />
+            <mxPoint x="450" y="400" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="conn-ui-analytics" value="" style="endArrow=classic;startArrow=classic;html=1;rounded=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeWidth=2;" edge="1" parent="1" source="ui-analytics" target="service-analytics">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="400" y="450" as="sourcePoint" />
+            <mxPoint x="450" y="400" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Services to Data -->
+        <mxCell id="conn-auth-firebase" value="" style="endArrow=classic;startArrow=classic;html=1;rounded=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeWidth=2;" edge="1" parent="1" source="service-auth" target="firebase-auth">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="400" y="450" as="sourcePoint" />
+            <mxPoint x="450" y="400" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="conn-services-firestore" value="" style="endArrow=classic;startArrow=classic;html=1;rounded=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeWidth=2;" edge="1" parent="1" source="layer-application" target="firestore">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="400" y="450" as="sourcePoint" />
+            <mxPoint x="450" y="400" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Data to External -->
+        <mxCell id="conn-firebase-fcm" value="" style="endArrow=classic;html=1;rounded=0;exitX=0.25;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeWidth=2;" edge="1" parent="1" source="layer-data" target="fcm">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="400" y="450" as="sourcePoint" />
+            <mxPoint x="450" y="400" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="conn-firebase-analytics" value="" style="endArrow=classic;html=1;rounded=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeWidth=2;" edge="1" parent="1" source="layer-data" target="analytics-ext">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="400" y="450" as="sourcePoint" />
+            <mxPoint x="450" y="400" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="conn-firebase-crashlytics" value="" style="endArrow=classic;html=1;rounded=0;exitX=0.75;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeWidth=2;" edge="1" parent="1" source="layer-data" target="crashlytics">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="400" y="450" as="sourcePoint" />
+            <mxPoint x="450" y="400" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Technology Stack Legend -->
+        <mxCell id="legend" value="&lt;b&gt;Technology Stack:&lt;/b&gt;&lt;br/&gt;Frontend: Flutter (Dart)&lt;br/&gt;State Management: Riverpod&lt;br/&gt;Backend: Firebase (Auth, Firestore, Storage, FCM)&lt;br/&gt;Architecture Pattern: Clean Architecture with Service Layer" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;align=left;verticalAlign=top;fontColor=#333333;" vertex="1" parent="1">
+          <mxGeometry x="80" y="870" width="500" height="100" as="geometry" />
+        </mxCell>
+
+        <!-- Design Patterns -->
+        <mxCell id="patterns" value="&lt;b&gt;Design Patterns:&lt;/b&gt;&lt;br/&gt;• Service-Oriented Architecture&lt;br/&gt;• Repository Pattern&lt;br/&gt;• Provider Pattern (Dependency Injection)&lt;br/&gt;• Observer Pattern (Real-time Updates)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;align=left;verticalAlign=top;fontColor=#333333;" vertex="1" parent="1">
+          <mxGeometry x="620" y="870" width="460" height="100" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

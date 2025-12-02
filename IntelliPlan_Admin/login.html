@@ -1,0 +1,455 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Admin Login — IntelliPlan</title>
+    <link rel="icon" type="image/svg+xml" href="assets/logo.svg">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body class="login-body">
+    <div class="login-container">
+      <div class="login-card">
+        <div class="login-header">
+          <div class="login-logo">
+            <img src="assets/logo.svg" alt="IntelliPlan Logo" />
+          </div>
+          <h1 class="login-title">IntelliPlan</h1>
+          <p class="login-subtitle">Admin Portal</p>
+        </div>
+
+        <form id="loginForm" class="login-form">
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input id="email" type="email" placeholder="admin@intelliplan.app" required />
+          </div>
+
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input id="password" type="password" placeholder="••••••••" required />
+          </div>
+
+          <div id="errorMessage" class="error-message"></div>
+
+          <button type="submit" class="login-btn" id="loginBtn">
+            <span class="btn-text">Sign In</span>
+            <span class="btn-loader"></span>
+          </button>
+        </form>
+
+        <p class="login-footer">Secured by Firebase Authentication</p>
+      </div>
+
+      <div class="login-bg-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+      </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+    <script>
+      // Firebase configuration
+      const firebaseConfig = {
+        apiKey: "AIzaSyAmFo5zsviGPUl72wZo5kkgGZz2z5ekvD8",
+        authDomain: "intelliplan-949ef.firebaseapp.com",
+        projectId: "intelliplan-949ef",
+        storageBucket: "intelliplan-949ef.firebasestorage.app",
+        messagingSenderId: "157923135399",
+        appId: "1:157923135399:web:fca532b81e15dfa5543082",
+        measurementId: "G-X0JL8LZYBR"
+      };
+
+      // Initialize Firebase
+      firebase.initializeApp(firebaseConfig);
+      const auth = firebase.auth();
+      const db = firebase.firestore();
+
+      // Check if already signed in
+      auth.onAuthStateChanged(async (user) => {
+        if (user) {
+          // Check if user is admin
+          const userDoc = await db.collection('users').doc(user.uid).get();
+          if (userDoc.exists && userDoc.data().role === 'admin') {
+            window.location.href = 'index.html';
+          } else {
+            auth.signOut();
+            showError('Access denied. Admin privileges required.');
+          }
+        }
+      });
+
+      const form = document.getElementById('loginForm');
+      const emailInput = document.getElementById('email');
+      const passwordInput = document.getElementById('password');
+      const loginBtn = document.getElementById('loginBtn');
+      const errorMessage = document.getElementById('errorMessage');
+
+      function showError(message) {
+        errorMessage.textContent = message;
+        errorMessage.style.display = 'block';
+        setTimeout(() => {
+          errorMessage.style.display = 'none';
+        }, 5000);
+      }
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const email = emailInput.value.trim();
+        const password = passwordInput.value;
+
+        if (!email || !password) {
+          showError('Please enter both email and password');
+          return;
+        }
+
+        loginBtn.disabled = true;
+        loginBtn.classList.add('loading');
+        loginBtn.querySelector('.btn-text').textContent = 'Signing in...';
+
+        try {
+          // Sign in with Firebase
+          const userCredential = await auth.signInWithEmailAndPassword(email, password);
+          const user = userCredential.user;
+
+          // Check if user is admin
+          const userDoc = await db.collection('users').doc(user.uid).get();
+          
+          if (!userDoc.exists) {
+            await auth.signOut();
+            showError('User account not found');
+            loginBtn.disabled = false;
+            loginBtn.classList.remove('loading');
+            loginBtn.querySelector('.btn-text').textContent = 'Sign In';
+            return;
+          }
+
+          const userData = userDoc.data();
+          
+          if (userData.role !== 'admin') {
+            await auth.signOut();
+            showError('Access denied. Admin privileges required.');
+            loginBtn.disabled = false;
+            loginBtn.classList.remove('loading');
+            loginBtn.querySelector('.btn-text').textContent = 'Sign In';
+            return;
+          }
+
+          // Success - redirect to dashboard
+          localStorage.setItem('adminLoggedIn', 'true');
+          window.location.href = 'index.html';
+
+        } catch (error) {
+          console.error('Login error:', error);
+          let message = 'Login failed. Please try again.';
+          
+          if (error.code === 'auth/user-not-found') {
+            message = 'No account found with this email';
+          } else if (error.code === 'auth/wrong-password') {
+            message = 'Incorrect password';
+          } else if (error.code === 'auth/invalid-email') {
+            message = 'Invalid email address';
+          } else if (error.code === 'auth/too-many-requests') {
+            message = 'Too many failed attempts. Please try again later.';
+          }
+          
+          showError(message);
+          loginBtn.disabled = false;
+          loginBtn.classList.remove('loading');
+          loginBtn.querySelector('.btn-text').textContent = 'Sign In';
+        }
+      });
+    </script>
+
+    <style>
+      /* Login Page Specific Styles */
+      .login-body {
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+      }
+
+      .login-container {
+        position: relative;
+        width: 100%;
+        max-width: 480px;
+        padding: 20px;
+        z-index: 10;
+      }
+
+      .login-card {
+        background: var(--card-bg);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--glass-border);
+        border-radius: 24px;
+        padding: 48px 40px;
+        box-shadow: var(--shadow-lg);
+        animation: slideUp 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      @keyframes slideUp {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .login-header {
+        text-align: center;
+        margin-bottom: 40px;
+      }
+
+      .login-logo {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 20px;
+        background: var(--accent-gradient);
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 8px 24px rgba(108, 158, 248, 0.4);
+        animation: logoFloat 3s ease-in-out infinite;
+      }
+
+      @keyframes logoFloat {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+      }
+
+      .login-logo img {
+        width: 48px;
+        height: 48px;
+      }
+
+      .login-title {
+        font-size: 32px;
+        font-weight: 800;
+        background: var(--accent-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        letter-spacing: -0.5px;
+        margin-bottom: 8px;
+      }
+
+      .login-subtitle {
+        font-size: 14px;
+        color: var(--text-muted);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      .login-form {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+      }
+
+      .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .form-group label {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-secondary);
+      }
+
+      .form-group input {
+        padding: 14px 18px;
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius-sm);
+        color: var(--text-primary);
+        font-size: 15px;
+        transition: var(--transition);
+        font-family: inherit;
+      }
+
+      .form-group input:focus {
+        outline: none;
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(108, 158, 248, 0.1);
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      .error-message {
+        padding: 14px 18px;
+        background: rgba(255, 59, 48, 0.1);
+        border: 1px solid rgba(255, 59, 48, 0.3);
+        border-radius: var(--radius-sm);
+        color: #FF6B6B;
+        font-size: 14px;
+        font-weight: 500;
+        display: none;
+        animation: shake 0.4s ease;
+      }
+
+      .error-message:not(:empty) {
+        display: block;
+      }
+
+      @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-10px); }
+        75% { transform: translateX(10px); }
+      }
+
+      .login-btn {
+        padding: 16px 24px;
+        background: var(--accent-gradient);
+        border: none;
+        border-radius: var(--radius-sm);
+        color: #FFFFFF;
+        font-size: 16px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: var(--transition);
+        box-shadow: 0 4px 16px rgba(108, 158, 248, 0.4);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .login-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(108, 158, 248, 0.5);
+      }
+
+      .login-btn:active {
+        transform: translateY(0);
+      }
+
+      .login-btn:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .btn-loader {
+        display: none;
+        width: 20px;
+        height: 20px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-top-color: #FFFFFF;
+        border-radius: 50%;
+        animation: spin 0.6s linear infinite;
+        position: absolute;
+        right: 24px;
+        top: 50%;
+        transform: translateY(-50%);
+      }
+
+      @keyframes spin {
+        to { transform: translateY(-50%) rotate(360deg); }
+      }
+
+      .login-btn.loading .btn-text {
+        opacity: 0.5;
+      }
+
+      .login-btn.loading .btn-loader {
+        display: block;
+      }
+
+      .login-footer {
+        text-align: center;
+        margin-top: 32px;
+        color: var(--text-muted);
+        font-size: 13px;
+        font-weight: 500;
+      }
+
+      .login-bg-shapes {
+        position: fixed;
+        inset: 0;
+        z-index: 1;
+        overflow: hidden;
+        pointer-events: none;
+      }
+
+      .shape {
+        position: absolute;
+        background: var(--accent-gradient);
+        opacity: 0.1;
+        border-radius: 50%;
+        filter: blur(40px);
+        animation: float 20s ease-in-out infinite;
+      }
+
+      .shape-1 {
+        width: 400px;
+        height: 400px;
+        top: -200px;
+        left: -200px;
+        animation-delay: 0s;
+      }
+
+      .shape-2 {
+        width: 500px;
+        height: 500px;
+        bottom: -250px;
+        right: -250px;
+        animation-delay: -7s;
+      }
+
+      .shape-3 {
+        width: 300px;
+        height: 300px;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        animation-delay: -14s;
+      }
+
+      @keyframes float {
+        0%, 100% {
+          transform: translate(0, 0) scale(1);
+        }
+        33% {
+          transform: translate(30px, -50px) scale(1.1);
+        }
+        66% {
+          transform: translate(-20px, 20px) scale(0.9);
+        }
+      }
+
+      @media (max-width: 600px) {
+        .login-card {
+          padding: 36px 28px;
+        }
+
+        .login-logo {
+          width: 64px;
+          height: 64px;
+        }
+
+        .login-logo img {
+          width: 40px;
+          height: 40px;
+        }
+
+        .login-title {
+          font-size: 28px;
+        }
+      }
+    </style>
+  </body>
+</html>

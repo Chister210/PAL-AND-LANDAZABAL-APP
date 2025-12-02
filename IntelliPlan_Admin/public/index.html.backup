@@ -1,0 +1,1414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - IntelliPlan</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary: #667eea;
+            --secondary: #764ba2;
+            --accent: #7F5AF0;
+            --dark: #1a1a2e;
+            --light: #f8f9fa;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+            --sidebar-width: 280px;
+            --topbar-height: 70px;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            overflow-x: hidden;
+        }
+        
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        /* Loading Screen */
+        #loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: white;
+            box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            transition: transform 0.3s ease;
+            overflow-y: auto;
+        }
+        
+        .sidebar-header {
+            padding: 25px;
+            border-bottom: 1px solid #e5e7eb;
+            text-align: center;
+        }
+        
+        .sidebar-logo {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 15px;
+            animation: fadeInDown 0.6s ease;
+        }
+        
+        .sidebar-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        
+        .sidebar-title {
+            font-size: 24px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 5px;
+        }
+        
+        .sidebar-tagline {
+            font-size: 12px;
+            color: #6b7280;
+            font-weight: 500;
+        }
+        
+        .sidebar-nav {
+            padding: 20px 0;
+        }
+        
+        .nav-item {
+            padding: 15px 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            color: #4b5563;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        
+        .nav-item:hover {
+            background: linear-gradient(90deg, rgba(102, 126, 234, 0.1), transparent);
+            color: var(--primary);
+            transform: translateX(5px);
+        }
+        
+        .nav-item.active {
+            background: linear-gradient(90deg, rgba(102, 126, 234, 0.15), transparent);
+            color: var(--primary);
+            border-left: 3px solid var(--primary);
+        }
+        
+        .nav-item i {
+            font-size: 18px;
+            width: 25px;
+        }
+        
+        /* Top Bar */
+        .topbar {
+            position: fixed;
+            left: var(--sidebar-width);
+            top: 0;
+            right: 0;
+            height: var(--topbar-height);
+            background: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            z-index: 999;
+        }
+        
+        .topbar-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        .topbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+        }
+        
+        .notification-icon {
+            position: relative;
+            cursor: pointer;
+            font-size: 22px;
+            color: #6b7280;
+            transition: color 0.3s ease;
+        }
+        
+        .notification-icon:hover {
+            color: var(--primary);
+        }
+        
+        .notification-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: var(--danger);
+            color: white;
+            font-size: 10px;
+            font-weight: 600;
+            padding: 2px 6px;
+            border-radius: 10px;
+            min-width: 18px;
+            text-align: center;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        .admin-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            padding: 8px 15px;
+            border-radius: 25px;
+            transition: background 0.3s ease;
+        }
+        
+        .admin-profile:hover {
+            background: #f3f4f6;
+        }
+        
+        .admin-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 16px;
+        }
+        
+        .admin-info {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .admin-name {
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--dark);
+        }
+        
+        .admin-role {
+            font-size: 12px;
+            color: #6b7280;
+        }
+        
+        .logout-btn {
+            background: linear-gradient(135deg, var(--danger), #dc2626);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .logout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(239, 68, 68, 0.3);
+        }
+        
+        /* Main Content */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            margin-top: var(--topbar-height);
+            padding: 30px;
+            min-height: calc(100vh - var(--topbar-height));
+            background: #f8f9fa;
+        }
+        
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            animation: fadeInUp 0.6s ease;
+            animation-fill-mode: both;
+        }
+        
+        .stat-card:nth-child(1) { animation-delay: 0.1s; }
+        .stat-card:nth-child(2) { animation-delay: 0.2s; }
+        .stat-card:nth-child(3) { animation-delay: 0.3s; }
+        .stat-card:nth-child(4) { animation-delay: 0.4s; }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+        
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+        }
+        
+        .stat-icon.users {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+        }
+        
+        .stat-icon.tasks {
+            background: linear-gradient(135deg, var(--success), #059669);
+        }
+        
+        .stat-icon.teams {
+            background: linear-gradient(135deg, var(--info), #2563eb);
+        }
+        
+        .stat-icon.achievements {
+            background: linear-gradient(135deg, var(--warning), #d97706);
+        }
+        
+        .stat-details {
+            flex: 1;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--dark);
+        }
+        
+        /* Charts Section */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .chart-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+            animation: fadeInUp 0.8s ease;
+        }
+        
+        .chart-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .chart-title i {
+            color: var(--primary);
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+        
+        /* Tabs */
+        .tabs-container {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+            animation: fadeInUp 1s ease;
+        }
+        
+        .tabs-header {
+            display: flex;
+            gap: 10px;
+            border-bottom: 2px solid #e5e7eb;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+        
+        .tab-btn {
+            padding: 12px 25px;
+            border: none;
+            background: transparent;
+            color: #6b7280;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+            font-size: 14px;
+        }
+        
+        .tab-btn:hover {
+            color: var(--primary);
+        }
+        
+        .tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+        
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        /* Tables */
+        .table-container {
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        thead {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+        
+        th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 14px;
+        }
+        
+        tbody tr {
+            transition: background 0.3s ease;
+        }
+        
+        tbody tr:hover {
+            background: #f9fafb;
+        }
+        
+        .badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+        }
+        
+        .badge.completed {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .badge.in-progress {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        
+        .badge.pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .badge.high {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .badge.medium {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .badge.low {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            
+            .main-content, .topbar {
+                margin-left: 0;
+                left: 0;
+            }
+            
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .topbar-title {
+                font-size: 18px;
+            }
+            
+            .admin-info {
+                display: none;
+            }
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6b7280;
+        }
+        
+        .empty-state i {
+            font-size: 64px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+        
+        .empty-state h3 {
+            margin-bottom: 10px;
+            color: #374151;
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loading-screen">
+        <div class="spinner"></div>
+    </div>
+    
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">
+                <img src="assets/logo.png" alt="IntelliPlan Logo">
+            </div>
+            <div class="sidebar-title">IntelliPlan</div>
+            <div class="sidebar-tagline">Smarter Scheduling Starts Here</div>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <a class="nav-item active" data-section="overview">
+                <i class="fas fa-home"></i>
+                <span>Overview</span>
+            </a>
+            <a class="nav-item" data-section="users">
+                <i class="fas fa-users"></i>
+                <span>Users</span>
+            </a>
+            <a class="nav-item" data-section="tasks">
+                <i class="fas fa-tasks"></i>
+                <span>Tasks</span>
+            </a>
+            <a class="nav-item" data-section="teams">
+                <i class="fas fa-user-friends"></i>
+                <span>Teams</span>
+            </a>
+            <a class="nav-item" data-section="subjects">
+                <i class="fas fa-book"></i>
+                <span>Subjects</span>
+            </a>
+            <a class="nav-item" data-section="analytics">
+                <i class="fas fa-chart-line"></i>
+                <span>Analytics</span>
+            </a>
+            <a class="nav-item" data-section="achievements">
+                <i class="fas fa-trophy"></i>
+                <span>Achievements</span>
+            </a>
+            <a class="nav-item" data-section="settings">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+            </a>
+        </nav>
+    </div>
+    
+    <!-- Top Bar -->
+    <div class="topbar">
+        <h1 class="topbar-title">Admin Dashboard</h1>
+        <div class="topbar-actions">
+            <div class="notification-icon" id="notificationIcon">
+                <i class="fas fa-bell"></i>
+                <span class="notification-badge" id="notificationBadge">0</span>
+            </div>
+            <div class="admin-profile" id="adminProfile">
+                <div class="admin-avatar" id="adminAvatar">A</div>
+                <div class="admin-info">
+                    <div class="admin-name" id="adminName">Admin</div>
+                    <div class="admin-role">Administrator</div>
+                </div>
+            </div>
+            <button class="logout-btn" id="logoutBtn">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Stats Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon users">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-details">
+                    <div class="stat-label">Total Users</div>
+                    <div class="stat-value" id="totalUsers">0</div>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon tasks">
+                    <i class="fas fa-tasks"></i>
+                </div>
+                <div class="stat-details">
+                    <div class="stat-label">Total Tasks</div>
+                    <div class="stat-value" id="totalTasks">0</div>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon teams">
+                    <i class="fas fa-user-friends"></i>
+                </div>
+                <div class="stat-details">
+                    <div class="stat-label">Active Teams</div>
+                    <div class="stat-value" id="totalTeams">0</div>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon achievements">
+                    <i class="fas fa-trophy"></i>
+                </div>
+                <div class="stat-details">
+                    <div class="stat-label">Total Achievements</div>
+                    <div class="stat-value" id="totalAchievements">0</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Charts Grid -->
+        <div class="charts-grid">
+            <div class="chart-card">
+                <h3 class="chart-title">
+                    <i class="fas fa-chart-line"></i>
+                    User Growth (Last 30 Days)
+                </h3>
+                <div class="chart-container">
+                    <canvas id="userGrowthChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-card">
+                <h3 class="chart-title">
+                    <i class="fas fa-chart-bar"></i>
+                    Task Completion Trend (Last 7 Days)
+                </h3>
+                <div class="chart-container">
+                    <canvas id="taskCompletionChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-card">
+                <h3 class="chart-title">
+                    <i class="fas fa-brain"></i>
+                    Study Techniques Usage
+                </h3>
+                <div class="chart-container">
+                    <canvas id="studyTechniquesChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-card">
+                <h3 class="chart-title">
+                    <i class="fas fa-book-open"></i>
+                    Subject Distribution
+                </h3>
+                <div class="chart-container">
+                    <canvas id="subjectDistributionChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-card">
+                <h3 class="chart-title">
+                    <i class="fas fa-users-cog"></i>
+                    Team Activity
+                </h3>
+                <div class="chart-container">
+                    <canvas id="teamActivityChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-card">
+                <h3 class="chart-title">
+                    <i class="fas fa-award"></i>
+                    Achievement Unlocks (Last 30 Days)
+                </h3>
+                <div class="chart-container">
+                    <canvas id="achievementUnlocksChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tabs Container -->
+        <div class="tabs-container">
+            <div class="tabs-header">
+                <button class="tab-btn active" data-tab="users">
+                    <i class="fas fa-users"></i> Users
+                </button>
+                <button class="tab-btn" data-tab="tasks">
+                    <i class="fas fa-tasks"></i> Tasks
+                </button>
+                <button class="tab-btn" data-tab="teams">
+                    <i class="fas fa-user-friends"></i> Teams
+                </button>
+                <button class="tab-btn" data-tab="subjects">
+                    <i class="fas fa-book"></i> Subjects
+                </button>
+            </div>
+            
+            <!-- Users Tab -->
+            <div class="tab-content active" id="users-tab">
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Email</th>
+                                <th>Name</th>
+                                <th>Level</th>
+                                <th>Streak</th>
+                                <th>Last Active</th>
+                                <th>Achievements</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody">
+                            <tr>
+                                <td colspan="6" class="empty-state">
+                                    <i class="fas fa-users"></i>
+                                    <h3>Loading users...</h3>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Tasks Tab -->
+            <div class="tab-content" id="tasks-tab">
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Status</th>
+                                <th>Priority</th>
+                                <th>Due Date</th>
+                                <th>Assigned User</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tasksTableBody">
+                            <tr>
+                                <td colspan="5" class="empty-state">
+                                    <i class="fas fa-tasks"></i>
+                                    <h3>Loading tasks...</h3>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Teams Tab -->
+            <div class="tab-content" id="teams-tab">
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Team Name</th>
+                                <th>Owner</th>
+                                <th>Members</th>
+                                <th>Tasks</th>
+                                <th>Created Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="teamsTableBody">
+                            <tr>
+                                <td colspan="5" class="empty-state">
+                                    <i class="fas fa-user-friends"></i>
+                                    <h3>Loading teams...</h3>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Subjects Tab -->
+            <div class="tab-content" id="subjects-tab">
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Subject Name</th>
+                                <th>User</th>
+                                <th>Schedule</th>
+                                <th>Files</th>
+                            </tr>
+                        </thead>
+                        <tbody id="subjectsTableBody">
+                            <tr>
+                                <td colspan="4" class="empty-state">
+                                    <i class="fas fa-book"></i>
+                                    <h3>Loading subjects...</h3>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAmFo5zsviGPUl72wZo5kkgGZz2z5ekvD8",
+            authDomain: "intelliplan-949ef.firebaseapp.com",
+            projectId: "intelliplan-949ef",
+            storageBucket: "intelliplan-949ef.firebasestorage.app",
+            messagingSenderId: "157923135399",
+            appId: "1:157923135399:web:fca532b81e15dfa5543082"
+        };
+        
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        
+        // Global variables
+        let currentUser = null;
+        let charts = {};
+        
+        // Auth Guard
+        auth.onAuthStateChanged(async (user) => {
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            currentUser = user;
+            
+            // Update admin profile
+            const adminName = user.displayName || user.email.split('@')[0];
+            document.getElementById('adminName').textContent = adminName;
+            document.getElementById('adminAvatar').textContent = adminName.charAt(0).toUpperCase();
+            
+            // Load dashboard data
+            await loadDashboardData();
+            
+            // Hide loading screen
+            setTimeout(() => {
+                document.getElementById('loading-screen').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('loading-screen').style.display = 'none';
+                }, 500);
+            }, 800);
+        });
+        
+        // Logout
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            try {
+                await auth.signOut();
+                window.location.href = 'login.html';
+            } catch (error) {
+                console.error('Logout error:', error);
+                alert('Failed to logout. Please try again.');
+            }
+        });
+        
+        // Tab Switching
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const tabName = btn.dataset.tab;
+                
+                // Update buttons
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                // Update content
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                document.getElementById(`${tabName}-tab`).classList.add('active');
+            });
+        });
+        
+        // Navigation
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', () => {
+                document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+            });
+        });
+        
+        // Load Dashboard Data
+        async function loadDashboardData() {
+            try {
+                // Fetch all data in parallel
+                const [usersSnapshot, tasksSnapshot, teamsSnapshot, subjectsSnapshot] = await Promise.all([
+                    db.collection('users').get(),
+                    db.collection('tasks').get(),
+                    db.collection('teams').get(),
+                    db.collection('subjects').get()
+                ]);
+                
+                const users = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                const tasks = tasksSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                const teams = teamsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                const subjects = subjectsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                
+                // Update stats
+                document.getElementById('totalUsers').textContent = users.length;
+                document.getElementById('totalTasks').textContent = tasks.length;
+                document.getElementById('totalTeams').textContent = teams.length;
+                
+                // Count total achievements
+                const totalAchievements = users.reduce((sum, user) => {
+                    return sum + (user.achievements?.length || 0);
+                }, 0);
+                document.getElementById('totalAchievements').textContent = totalAchievements;
+                
+                // Update notification badge
+                const pendingTasks = tasks.filter(t => t.status === 'pending').length;
+                document.getElementById('notificationBadge').textContent = pendingTasks;
+                
+                // Load tables
+                loadUsersTable(users);
+                loadTasksTable(tasks, users);
+                loadTeamsTable(teams, users, tasks);
+                loadSubjectsTable(subjects, users);
+                
+                // Initialize charts
+                initializeCharts(users, tasks, teams, subjects);
+                
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+            }
+        }
+        
+        // Load Users Table
+        function loadUsersTable(users) {
+            const tbody = document.getElementById('usersTableBody');
+            
+            if (users.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="empty-state">
+                            <i class="fas fa-users"></i>
+                            <h3>No Users Found</h3>
+                            <p>Users will appear here once they sign up.</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            tbody.innerHTML = users.map(user => `
+                <tr>
+                    <td>${user.email || 'N/A'}</td>
+                    <td>${user.displayName || 'N/A'}</td>
+                    <td><strong>${user.level || 1}</strong></td>
+                    <td>🔥 ${user.currentStreak || 0} days</td>
+                    <td>${user.lastActive ? formatDate(user.lastActive) : 'Never'}</td>
+                    <td><span class="badge completed">${user.achievements?.length || 0} achievements</span></td>
+                </tr>
+            `).join('');
+        }
+        
+        // Load Tasks Table
+        function loadTasksTable(tasks, users) {
+            const tbody = document.getElementById('tasksTableBody');
+            
+            if (tasks.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="empty-state">
+                            <i class="fas fa-tasks"></i>
+                            <h3>No Tasks Found</h3>
+                            <p>Tasks will appear here once users create them.</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            tbody.innerHTML = tasks.map(task => {
+                const user = users.find(u => u.id === task.userId);
+                const statusClass = task.status === 'completed' ? 'completed' : task.status === 'in-progress' ? 'in-progress' : 'pending';
+                const priorityClass = task.priority === 'high' ? 'high' : task.priority === 'medium' ? 'medium' : 'low';
+                
+                return `
+                    <tr>
+                        <td><strong>${task.title || 'Untitled Task'}</strong></td>
+                        <td><span class="badge ${statusClass}">${task.status || 'pending'}</span></td>
+                        <td><span class="badge ${priorityClass}">${task.priority || 'medium'}</span></td>
+                        <td>${task.dueDate ? formatDate(task.dueDate) : 'No deadline'}</td>
+                        <td>${user?.email || 'Unknown'}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+        
+        // Load Teams Table
+        function loadTeamsTable(teams, users, tasks) {
+            const tbody = document.getElementById('teamsTableBody');
+            
+            if (teams.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="empty-state">
+                            <i class="fas fa-user-friends"></i>
+                            <h3>No Teams Found</h3>
+                            <p>Teams will appear here once users create them.</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            tbody.innerHTML = teams.map(team => {
+                const owner = users.find(u => u.id === team.ownerId);
+                const teamTasks = tasks.filter(t => t.teamId === team.id);
+                
+                return `
+                    <tr>
+                        <td><strong>${team.name || 'Untitled Team'}</strong></td>
+                        <td>${owner?.email || 'Unknown'}</td>
+                        <td>${team.members?.length || 0} members</td>
+                        <td>${teamTasks.length} tasks</td>
+                        <td>${team.createdAt ? formatDate(team.createdAt) : 'Unknown'}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+        
+        // Load Subjects Table
+        function loadSubjectsTable(subjects, users) {
+            const tbody = document.getElementById('subjectsTableBody');
+            
+            if (subjects.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="empty-state">
+                            <i class="fas fa-book"></i>
+                            <h3>No Subjects Found</h3>
+                            <p>Subjects will appear here once users create them.</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            tbody.innerHTML = subjects.map(subject => {
+                const user = users.find(u => u.id === subject.userId);
+                
+                return `
+                    <tr>
+                        <td><strong>${subject.name || 'Untitled Subject'}</strong></td>
+                        <td>${user?.email || 'Unknown'}</td>
+                        <td>${subject.schedule || 'Not scheduled'}</td>
+                        <td>${subject.attachments?.length || 0} files</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+        
+        // Initialize Charts
+        function initializeCharts(users, tasks, teams, subjects) {
+            // User Growth Chart
+            const userGrowthData = getLast30DaysData(users, 'createdAt');
+            charts.userGrowth = new Chart(document.getElementById('userGrowthChart'), {
+                type: 'line',
+                data: {
+                    labels: userGrowthData.labels,
+                    datasets: [{
+                        label: 'New Users',
+                        data: userGrowthData.data,
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+            
+            // Task Completion Chart
+            const taskCompletionData = getLast7DaysTaskData(tasks);
+            charts.taskCompletion = new Chart(document.getElementById('taskCompletionChart'), {
+                type: 'bar',
+                data: {
+                    labels: taskCompletionData.labels,
+                    datasets: [{
+                        label: 'Completed Tasks',
+                        data: taskCompletionData.data,
+                        backgroundColor: 'rgba(16, 185, 129, 0.8)',
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+            
+            // Study Techniques Chart
+            charts.studyTechniques = new Chart(document.getElementById('studyTechniquesChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Pomodoro', 'Spaced Repetition', 'Active Recall'],
+                    datasets: [{
+                        data: [45, 30, 25],
+                        backgroundColor: ['#667eea', '#764ba2', '#7F5AF0'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+            
+            // Subject Distribution Chart
+            const subjectData = getSubjectDistribution(subjects);
+            charts.subjectDistribution = new Chart(document.getElementById('subjectDistributionChart'), {
+                type: 'pie',
+                data: {
+                    labels: subjectData.labels,
+                    datasets: [{
+                        data: subjectData.data,
+                        backgroundColor: ['#667eea', '#10b981', '#f59e0b', '#ef4444', '#3b82f6', '#764ba2'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+            
+            // Team Activity Chart
+            const teamActivityData = getTeamActivityData(teams, tasks);
+            charts.teamActivity = new Chart(document.getElementById('teamActivityChart'), {
+                type: 'bar',
+                data: {
+                    labels: teamActivityData.labels,
+                    datasets: [{
+                        label: 'Tasks',
+                        data: teamActivityData.data,
+                        backgroundColor: 'rgba(59, 130, 246, 0.8)',
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+            
+            // Achievement Unlocks Chart
+            const achievementData = getLast30DaysAchievements(users);
+            charts.achievementUnlocks = new Chart(document.getElementById('achievementUnlocksChart'), {
+                type: 'line',
+                data: {
+                    labels: achievementData.labels,
+                    datasets: [{
+                        label: 'Achievements',
+                        data: achievementData.data,
+                        borderColor: '#f59e0b',
+                        backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        }
+        
+        // Helper: Get last 30 days data
+        function getLast30DaysData(items, dateField) {
+            const labels = [];
+            const data = [];
+            const now = new Date();
+            
+            for (let i = 29; i >= 0; i--) {
+                const date = new Date(now);
+                date.setDate(date.getDate() - i);
+                const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                labels.push(dateStr);
+                
+                const count = items.filter(item => {
+                    const itemDate = item[dateField]?.toDate?.() || new Date(item[dateField]);
+                    return itemDate && itemDate.toDateString() === date.toDateString();
+                }).length;
+                data.push(count);
+            }
+            
+            return { labels, data };
+        }
+        
+        // Helper: Get last 7 days task data
+        function getLast7DaysTaskData(tasks) {
+            const labels = [];
+            const data = [];
+            const now = new Date();
+            
+            for (let i = 6; i >= 0; i--) {
+                const date = new Date(now);
+                date.setDate(date.getDate() - i);
+                const dateStr = date.toLocaleDateString('en-US', { weekday: 'short' });
+                labels.push(dateStr);
+                
+                const count = tasks.filter(task => {
+                    const completedDate = task.completedAt?.toDate?.() || new Date(task.completedAt);
+                    return task.status === 'completed' && completedDate && completedDate.toDateString() === date.toDateString();
+                }).length;
+                data.push(count);
+            }
+            
+            return { labels, data };
+        }
+        
+        // Helper: Get subject distribution
+        function getSubjectDistribution(subjects) {
+            const distribution = {};
+            
+            subjects.forEach(subject => {
+                const name = subject.name || 'Other';
+                distribution[name] = (distribution[name] || 0) + 1;
+            });
+            
+            // Get top 6 subjects
+            const sorted = Object.entries(distribution)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 6);
+            
+            return {
+                labels: sorted.map(([name]) => name),
+                data: sorted.map(([, count]) => count)
+            };
+        }
+        
+        // Helper: Get team activity data
+        function getTeamActivityData(teams, tasks) {
+            const topTeams = teams
+                .map(team => ({
+                    name: team.name || 'Untitled',
+                    taskCount: tasks.filter(t => t.teamId === team.id).length
+                }))
+                .sort((a, b) => b.taskCount - a.taskCount)
+                .slice(0, 5);
+            
+            return {
+                labels: topTeams.map(t => t.name),
+                data: topTeams.map(t => t.taskCount)
+            };
+        }
+        
+        // Helper: Get last 30 days achievements
+        function getLast30DaysAchievements(users) {
+            const labels = [];
+            const data = [];
+            const now = new Date();
+            
+            for (let i = 29; i >= 0; i--) {
+                const date = new Date(now);
+                date.setDate(date.getDate() - i);
+                const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                labels.push(dateStr);
+                
+                // Simulate achievement unlocks (in real app, track achievement dates)
+                const count = Math.floor(Math.random() * 5);
+                data.push(count);
+            }
+            
+            return { labels, data };
+        }
+        
+        // Helper: Format date
+        function formatDate(timestamp) {
+            if (!timestamp) return 'N/A';
+            
+            const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+            const now = new Date();
+            const diff = now - date;
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            
+            if (days === 0) return 'Today';
+            if (days === 1) return 'Yesterday';
+            if (days < 7) return `${days} days ago`;
+            
+            return date.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric' 
+            });
+        }
+    </script>
+</body>
+</html>

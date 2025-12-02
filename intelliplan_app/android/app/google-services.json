@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "157923135399",
+    "project_id": "intelliplan-949ef",
+    "storage_bucket": "intelliplan-949ef.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:157923135399:android:c5c60cf4c23f2e46543082",
+        "android_client_info": {
+          "package_name": "com.example.intelliplan_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "157923135399-2ttfui12glsp14k5tnmmrkvpufm458gd.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.intelliplan_app",
+            "certificate_hash": "07ff8d5f70949eb27c245722e7c6f155f3df6d72"
+          }
+        },
+        {
+          "client_id": "157923135399-9h7odse0i09o0s10d2gdu163sbvftbpe.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC9HuXM-xku_wKTrO-ee3ZaYq_Jl9XoDsM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "157923135399-9h7odse0i09o0s10d2gdu163sbvftbpe.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

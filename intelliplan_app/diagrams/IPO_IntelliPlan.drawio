@@ -1,0 +1,217 @@
+<mxfile host="app.diagrams.net" modified="2024-01-01T00:00:00.000Z" agent="draw.io" version="22.1.0" etag="IPO_IntelliPlan">
+  <diagram name="User IPO Diagram" id="ipo-user">
+    <mxGraphModel dx="1422" dy="794" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+        <!-- Title -->
+        <mxCell id="title-user" value="&lt;b&gt;&lt;font style=&quot;font-size: 18px;&quot;&gt;IntelliPlan - User IPO Diagram&lt;/font&gt;&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="350" y="30" width="450" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- Input Box -->
+        <mxCell id="input-box" value="&lt;b&gt;&lt;font style=&quot;font-size: 16px;&quot;&gt;INPUT&lt;/font&gt;&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;align=center;spacingTop=10;" vertex="1" parent="1">
+          <mxGeometry x="80" y="100" width="280" height="600" as="geometry" />
+        </mxCell>
+
+        <!-- Input Items -->
+        <mxCell id="input-1" value="&lt;b&gt;User Registration&lt;/b&gt;&lt;br/&gt;- Email Address&lt;br/&gt;- Password&lt;br/&gt;- Full Name&lt;br/&gt;- Phone Number" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="100" y="140" width="240" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="input-2" value="&lt;b&gt;Task Information&lt;/b&gt;&lt;br/&gt;- Task Title&lt;br/&gt;- Description&lt;br/&gt;- Due Date&lt;br/&gt;- Priority (Low/Medium/High)&lt;br/&gt;- Task Type&lt;br/&gt;- Course Code" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="100" y="235" width="240" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="input-3" value="&lt;b&gt;Study Session Data&lt;/b&gt;&lt;br/&gt;- Technique Selection&lt;br/&gt;- Topic/Subject&lt;br/&gt;- Session Duration&lt;br/&gt;- Productivity Rating&lt;br/&gt;- Notes" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="100" y="350" width="240" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="input-4" value="&lt;b&gt;Schedule Information&lt;/b&gt;&lt;br/&gt;- Course Name &amp; Code&lt;br/&gt;- Instructor&lt;br/&gt;- Day of Week&lt;br/&gt;- Start/End Time&lt;br/&gt;- Location" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="100" y="455" width="240" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="input-5" value="&lt;b&gt;Flashcard Data&lt;/b&gt;&lt;br/&gt;- Deck Name&lt;br/&gt;- Question&lt;br/&gt;- Answer&lt;br/&gt;- Difficulty Rating&lt;br/&gt;- Course Code" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="100" y="560" width="240" height="90" as="geometry" />
+        </mxCell>
+
+        <!-- Process Box -->
+        <mxCell id="process-box" value="&lt;b&gt;&lt;font style=&quot;font-size: 16px;&quot;&gt;PROCESS&lt;/font&gt;&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;verticalAlign=top;align=center;spacingTop=10;" vertex="1" parent="1">
+          <mxGeometry x="440" y="100" width="280" height="600" as="geometry" />
+        </mxCell>
+
+        <!-- Process Items -->
+        <mxCell id="process-1" value="&lt;b&gt;1. User Authentication&lt;/b&gt;&lt;br/&gt;- Validate credentials&lt;br/&gt;- Create/verify user account&lt;br/&gt;- Generate auth token&lt;br/&gt;- Initialize user session" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="460" y="140" width="240" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="process-2" value="&lt;b&gt;2. Task Management&lt;/b&gt;&lt;br/&gt;- Validate task data&lt;br/&gt;- Store in Firestore&lt;br/&gt;- Schedule notifications&lt;br/&gt;- Update task board&lt;br/&gt;- Calculate priority score" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="460" y="235" width="240" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="process-3" value="&lt;b&gt;3. Study Session Processing&lt;/b&gt;&lt;br/&gt;- Track session time&lt;br/&gt;- Calculate productivity&lt;br/&gt;- Award XP points&lt;br/&gt;- Check achievements&lt;br/&gt;- Update analytics" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="460" y="340" width="240" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="process-4" value="&lt;b&gt;4. Schedule Management&lt;/b&gt;&lt;br/&gt;- Validate time slots&lt;br/&gt;- Check for conflicts&lt;br/&gt;- Store class data&lt;br/&gt;- Generate calendar view&lt;br/&gt;- Set class reminders" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="460" y="445" width="240" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="process-5" value="&lt;b&gt;5. Flashcard Processing&lt;/b&gt;&lt;br/&gt;- Apply SM-2 algorithm&lt;br/&gt;- Calculate ease factor&lt;br/&gt;- Schedule next review&lt;br/&gt;- Update interval&lt;br/&gt;- Track performance" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="460" y="550" width="240" height="90" as="geometry" />
+        </mxCell>
+
+        <!-- Output Box -->
+        <mxCell id="output-box" value="&lt;b&gt;&lt;font style=&quot;font-size: 16px;&quot;&gt;OUTPUT&lt;/font&gt;&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;verticalAlign=top;align=center;spacingTop=10;" vertex="1" parent="1">
+          <mxGeometry x="800" y="100" width="280" height="600" as="geometry" />
+        </mxCell>
+
+        <!-- Output Items -->
+        <mxCell id="output-1" value="&lt;b&gt;User Dashboard&lt;/b&gt;&lt;br/&gt;- Profile Information&lt;br/&gt;- Current Level &amp; XP&lt;br/&gt;- Active Tasks Count&lt;br/&gt;- Study Streak&lt;br/&gt;- Achievements Unlocked" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d79b00;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="820" y="140" width="240" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="output-2" value="&lt;b&gt;Task Board View&lt;/b&gt;&lt;br/&gt;- To-Do Tasks&lt;br/&gt;- In-Progress Tasks&lt;br/&gt;- Completed Tasks&lt;br/&gt;- Task Notifications&lt;br/&gt;- Priority Indicators" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d79b00;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="820" y="245" width="240" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="output-3" value="&lt;b&gt;Analytics Reports&lt;/b&gt;&lt;br/&gt;- Study Time Charts&lt;br/&gt;- Productivity Patterns&lt;br/&gt;- Subject Distribution&lt;br/&gt;- Peak Performance Times&lt;br/&gt;- AI Recommendations" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d79b00;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="820" y="350" width="240" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="output-4" value="&lt;b&gt;Class Schedule View&lt;/b&gt;&lt;br/&gt;- Weekly Calendar&lt;br/&gt;- Class Details&lt;br/&gt;- Upcoming Classes&lt;br/&gt;- Schedule Conflicts&lt;br/&gt;- Reminders" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d79b00;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="820" y="455" width="240" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="output-5" value="&lt;b&gt;Study Progress&lt;/b&gt;&lt;br/&gt;- Flashcard Reviews Due&lt;br/&gt;- Session Summaries&lt;br/&gt;- XP Gained&lt;br/&gt;- Level Progress&lt;br/&gt;- Achievement Notifications" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d79b00;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="820" y="560" width="240" height="90" as="geometry" />
+        </mxCell>
+
+        <!-- Arrows -->
+        <mxCell id="arrow-1" value="" style="endArrow=classic;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=3;strokeColor=#6c8ebf;" edge="1" parent="1" source="input-box" target="process-box">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="400" y="450" as="sourcePoint" />
+            <mxPoint x="450" y="400" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="arrow-2" value="" style="endArrow=classic;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=3;strokeColor=#82b366;" edge="1" parent="1" source="process-box" target="output-box">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="400" y="450" as="sourcePoint" />
+            <mxPoint x="450" y="400" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+  
+  <diagram name="Admin IPO Diagram" id="ipo-admin">
+    <mxGraphModel dx="1422" dy="794" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+        <!-- Title -->
+        <mxCell id="title-admin" value="&lt;b&gt;&lt;font style=&quot;font-size: 18px;&quot;&gt;IntelliPlan - Admin IPO Diagram&lt;/font&gt;&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="350" y="30" width="450" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- Input Box -->
+        <mxCell id="admin-input-box" value="&lt;b&gt;&lt;font style=&quot;font-size: 16px;&quot;&gt;INPUT&lt;/font&gt;&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;verticalAlign=top;align=center;spacingTop=10;" vertex="1" parent="1">
+          <mxGeometry x="80" y="100" width="280" height="500" as="geometry" />
+        </mxCell>
+
+        <!-- Admin Input Items -->
+        <mxCell id="admin-input-1" value="&lt;b&gt;Admin Login&lt;/b&gt;&lt;br/&gt;- Admin Email&lt;br/&gt;- Admin Password&lt;br/&gt;- 2FA Code (if enabled)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#b85450;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="100" y="140" width="240" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="admin-input-2" value="&lt;b&gt;User Management Query&lt;/b&gt;&lt;br/&gt;- User ID/Email Search&lt;br/&gt;- Date Range Filter&lt;br/&gt;- Activity Status&lt;br/&gt;- Registration Date" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#b85450;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="100" y="225" width="240" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="admin-input-3" value="&lt;b&gt;Analytics Request&lt;/b&gt;&lt;br/&gt;- Report Type Selection&lt;br/&gt;- Time Period&lt;br/&gt;- User/Group Filter&lt;br/&gt;- Metric Selection" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#b85450;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="100" y="320" width="240" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="admin-input-4" value="&lt;b&gt;System Configuration&lt;/b&gt;&lt;br/&gt;- Feature Toggles&lt;br/&gt;- System Parameters&lt;br/&gt;- Notification Settings&lt;br/&gt;- Maintenance Mode" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#b85450;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="100" y="415" width="240" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="admin-input-5" value="&lt;b&gt;User Actions&lt;/b&gt;&lt;br/&gt;- Account Suspension&lt;br/&gt;- Password Reset&lt;br/&gt;- Data Export Request&lt;br/&gt;- Support Ticket" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#b85450;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="100" y="510" width="240" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- Process Box -->
+        <mxCell id="admin-process-box" value="&lt;b&gt;&lt;font style=&quot;font-size: 16px;&quot;&gt;PROCESS&lt;/font&gt;&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;verticalAlign=top;align=center;spacingTop=10;" vertex="1" parent="1">
+          <mxGeometry x="440" y="100" width="280" height="500" as="geometry" />
+        </mxCell>
+
+        <!-- Admin Process Items -->
+        <mxCell id="admin-process-1" value="&lt;b&gt;1. Admin Authentication&lt;/b&gt;&lt;br/&gt;- Verify admin credentials&lt;br/&gt;- Check permission level&lt;br/&gt;- Generate admin token&lt;br/&gt;- Log admin access" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="460" y="140" width="240" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="admin-process-2" value="&lt;b&gt;2. User Data Retrieval&lt;/b&gt;&lt;br/&gt;- Query Firestore users&lt;br/&gt;- Apply filters&lt;br/&gt;- Aggregate user stats&lt;br/&gt;- Format user list" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="460" y="235" width="240" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="admin-process-3" value="&lt;b&gt;3. Analytics Processing&lt;/b&gt;&lt;br/&gt;- Aggregate system data&lt;br/&gt;- Calculate metrics&lt;br/&gt;- Generate visualizations&lt;br/&gt;- Create summary reports" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="460" y="330" width="240" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="admin-process-4" value="&lt;b&gt;4. System Management&lt;/b&gt;&lt;br/&gt;- Update configurations&lt;br/&gt;- Apply feature flags&lt;br/&gt;- Validate settings&lt;br/&gt;- Notify system changes" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="460" y="425" width="240" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="admin-process-5" value="&lt;b&gt;5. User Action Processing&lt;/b&gt;&lt;br/&gt;- Execute admin action&lt;br/&gt;- Update user status&lt;br/&gt;- Send notifications&lt;br/&gt;- Log admin activity" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="460" y="520" width="240" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- Output Box -->
+        <mxCell id="admin-output-box" value="&lt;b&gt;&lt;font style=&quot;font-size: 16px;&quot;&gt;OUTPUT&lt;/font&gt;&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;verticalAlign=top;align=center;spacingTop=10;" vertex="1" parent="1">
+          <mxGeometry x="800" y="100" width="280" height="500" as="geometry" />
+        </mxCell>
+
+        <!-- Admin Output Items -->
+        <mxCell id="admin-output-1" value="&lt;b&gt;Admin Dashboard&lt;/b&gt;&lt;br/&gt;- System Overview&lt;br/&gt;- Total Users Count&lt;br/&gt;- Active Sessions&lt;br/&gt;- System Health Status&lt;br/&gt;- Recent Activities" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d79b00;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="820" y="140" width="240" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="admin-output-2" value="&lt;b&gt;User Management Report&lt;/b&gt;&lt;br/&gt;- User List with Details&lt;br/&gt;- Registration Statistics&lt;br/&gt;- Activity Status&lt;br/&gt;- Account Actions Log" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d79b00;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="820" y="245" width="240" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="admin-output-3" value="&lt;b&gt;System Analytics Report&lt;/b&gt;&lt;br/&gt;- Usage Statistics&lt;br/&gt;- Study Session Metrics&lt;br/&gt;- Feature Adoption Rates&lt;br/&gt;- Performance Charts&lt;br/&gt;- Trend Analysis" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d79b00;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="820" y="340" width="240" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="admin-output-4" value="&lt;b&gt;Configuration Status&lt;/b&gt;&lt;br/&gt;- Current Settings Display&lt;br/&gt;- Update Confirmation&lt;br/&gt;- System Alerts&lt;br/&gt;- Maintenance Schedule" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d79b00;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="820" y="445" width="240" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="admin-output-5" value="&lt;b&gt;Action Result&lt;/b&gt;&lt;br/&gt;- Success/Failure Status&lt;br/&gt;- User Notification Sent&lt;br/&gt;- Activity Log Entry&lt;br/&gt;- Data Export File" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d79b00;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="820" y="540" width="240" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- Arrows -->
+        <mxCell id="admin-arrow-1" value="" style="endArrow=classic;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=3;strokeColor=#b85450;" edge="1" parent="1" source="admin-input-box" target="admin-process-box">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="400" y="450" as="sourcePoint" />
+            <mxPoint x="450" y="400" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="admin-arrow-2" value="" style="endArrow=classic;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=3;strokeColor=#82b366;" edge="1" parent="1" source="admin-process-box" target="admin-output-box">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="400" y="450" as="sourcePoint" />
+            <mxPoint x="450" y="400" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
