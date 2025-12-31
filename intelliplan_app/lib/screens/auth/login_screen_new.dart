@@ -29,13 +29,19 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _handleLogin() async {
     if (_formKey.currentState!.validate()) {
+      print('DEBUG LOGIN: Starting login process...');
       final authService = context.read<AuthService>();
+      
+      print('DEBUG LOGIN: Calling authService.login()');
       final success = await authService.login(
         _emailController.text.trim(),
         _passwordController.text,
       );
 
+      print('DEBUG LOGIN: Login result: $success, error: ${authService.errorMessage}');
+
       if (success && mounted) {
+        print('DEBUG LOGIN: Login successful, showing success dialog');
         // Show success animation before navigating
         AnimatedFeedbackDialog.showSuccess(
           context,
@@ -44,10 +50,18 @@ class _LoginScreenState extends State<LoginScreen> {
           onComplete: () => context.go('/'), // Navigate to new home screen
         );
       } else if (mounted && authService.errorMessage != null) {
+        print('DEBUG LOGIN: Login failed, showing error: ${authService.errorMessage}');
         AnimatedFeedbackDialog.showError(
           context,
           title: 'Login Failed',
           message: authService.errorMessage!,
+        );
+      } else if (mounted) {
+        print('DEBUG LOGIN: Login failed with no error message');
+        AnimatedFeedbackDialog.showError(
+          context,
+          title: 'Login Failed',
+          message: 'Login failed. Please try again.',
         );
       }
     }

@@ -255,6 +255,7 @@ class _TeamDashboardScreenState extends State<TeamDashboardScreen> {
 
   Widget _buildTeamCard(Team team, user) {
     final isOwner = team.ownerId == user.id;
+    final teamService = context.read<TeamService>();
     
     return GestureDetector(
       onTap: () => setState(() => _selectedTeam = team),
@@ -314,7 +315,7 @@ class _TeamDashboardScreenState extends State<TeamDashboardScreen> {
                     ],
                   ),
                 ),
-                if (isOwner)
+                if (isOwner) ...[
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
@@ -330,6 +331,24 @@ class _TeamDashboardScreenState extends State<TeamDashboardScreen> {
                       ),
                     ),
                   ),
+                  const SizedBox(width: 8),
+                  // Delete button for owner
+                  GestureDetector(
+                    onTap: () => _showDeleteTeamDialog(team, user, teamService),
+                    child: Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: AppTheme.accentAlert.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: const Icon(
+                        Icons.delete_outline,
+                        size: 18,
+                        color: AppTheme.accentAlert,
+                      ),
+                    ),
+                  ),
+                ],
               ],
             ),
             const SizedBox(height: 12),
@@ -388,6 +407,13 @@ class _TeamDashboardScreenState extends State<TeamDashboardScreen> {
                   ),
                 ),
               ),
+              // Delete button for team owner only
+              if (isOwner)
+                IconButton(
+                  icon: const Icon(Icons.delete_outline, color: AppTheme.accentAlert),
+                  tooltip: 'Delete Team',
+                  onPressed: () => _showDeleteTeamDialog(team, user, teamService),
+                ),
             ],
           ),
         ),
@@ -1439,6 +1465,129 @@ class _TeamDashboardScreenState extends State<TeamDashboardScreen> {
             ),
             child: Text(
               'Remove',
+              style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Delete Team Dialog
+  void _showDeleteTeamDialog(Team team, user, TeamService teamService) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: AppTheme.surfaceAlt,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppTheme.accentAlert.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(Icons.warning_amber_rounded, color: AppTheme.accentAlert, size: 24),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'Delete Team',
+                style: GoogleFonts.poppins(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.textPrimary,
+                ),
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Are you sure you want to delete "${team.name}"?',
+              style: GoogleFonts.inter(
+                color: AppTheme.textPrimary,
+                fontSize: 14,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppTheme.accentAlert.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppTheme.accentAlert.withOpacity(0.3)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.info_outline, color: AppTheme.accentAlert, size: 20),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'This action cannot be undone. All team tasks and invites will also be deleted.',
+                      style: GoogleFonts.inter(
+                        color: AppTheme.accentAlert,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text(
+              'Cancel',
+              style: GoogleFonts.inter(color: AppTheme.textSecondary),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              try {
+                await teamService.deleteTeam(
+                  teamId: team.id,
+                  userId: user.id,
+                );
+                
+                if (context.mounted) {
+                  Navigator.pop(dialogContext);
+                  setState(() {
+                    _selectedTeam = null;
+                  });
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Team "${team.name}" has been deleted'),
+                      backgroundColor: AppTheme.accentSuccess,
+                    ),
+                  );
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Error deleting team: $e'),
+                      backgroundColor: AppTheme.accentAlert,
+                    ),
+                  );
+                }
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.accentAlert,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: Text(
+              'Delete Team',
               style: GoogleFonts.inter(fontWeight: FontWeight.w600),
             ),
           ),

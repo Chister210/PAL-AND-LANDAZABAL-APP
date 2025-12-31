@@ -693,12 +693,16 @@ class _SpacedRepetitionScreenState extends State<SpacedRepetitionScreen> with Si
             children: [
               Icon(Icons.flip, color: Colors.blue[700]),
               const SizedBox(width: 12),
-              Text(
-                'Tap the card to see the answer',
-                style: TextStyle(
-                  color: Colors.blue[700],
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
+              Flexible(
+                child: Text(
+                  'Tap the card to see the answer',
+                  style: TextStyle(
+                    color: Colors.blue[700],
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 2,
                 ),
               ),
             ],

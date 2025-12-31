@@ -471,7 +471,10 @@ class _RegistrationFlowScreenState extends State<RegistrationFlowScreen> {
   Future<void> _signInWithGoogle() async {
     setState(() => _isSigningInWithGoogle = true);
     try {
-      final GoogleSignIn googleSignIn = GoogleSignIn();
+      final GoogleSignIn googleSignIn = GoogleSignIn(
+        scopes: ['email', 'profile'],
+        serverClientId: '157923135399-9h7odse0i09o0s10d2gdu163sbvftbpe.apps.googleusercontent.com',
+      );
       final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
 
       if (googleUser == null) {

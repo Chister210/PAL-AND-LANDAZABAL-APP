@@ -1,1 +1,25 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"intelliplan-949ef","appId":"1:157923135399:android:c5c60cf4c23f2e46543082","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"intelliplan-949ef","configurations":{"android":"1:157923135399:android:c5c60cf4c23f2e46543082"}}}}}}
+{
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "intelliplan-949ef",
+          "appId": "1:157923135399:android:c5c60cf4c23f2e46543082",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "intelliplan-949ef",
+          "configurations": {
+            "android": "1:157923135399:android:c5c60cf4c23f2e46543082"
+          }
+        }
+      }
+    }
+  }
+}

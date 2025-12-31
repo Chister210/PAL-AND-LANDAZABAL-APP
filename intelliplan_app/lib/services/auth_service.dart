@@ -8,7 +8,11 @@ import 'notification_service.dart';
 class AuthService extends ChangeNotifier {
   final firebase_auth.FirebaseAuth _firebaseAuth = firebase_auth.FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
+  // Initialize GoogleSignIn with the web client ID from google-services.json
+  final GoogleSignIn _googleSignIn = GoogleSignIn(
+    scopes: ['email', 'profile'],
+    serverClientId: '157923135399-9h7odse0i09o0s10d2gdu163sbvftbpe.apps.googleusercontent.com',
+  );
   final NotificationService _notificationService = NotificationService();
   
   app_models.User? _currentUser;
@@ -37,12 +41,16 @@ class AuthService extends ChangeNotifier {
 
   Future<void> _loadUserData(String userId) async {
     try {
+      debugPrint('Loading user data for userId: $userId');
       final doc = await _firestore.collection('users').doc(userId).get();
       if (doc.exists) {
+        debugPrint('User document exists, parsing data...');
+        debugPrint('Document data: ${doc.data()}');
         _currentUser = app_models.User.fromJson({
           ...doc.data()!,
           'id': doc.id,
         });
+        debugPrint('User loaded successfully: ${_currentUser?.name}');
         
         // Update lastActive timestamp every time user data is loaded (app launch)
         await _firestore.collection('users').doc(userId).update({
@@ -50,9 +58,39 @@ class AuthService extends ChangeNotifier {
         }).catchError((e) => debugPrint('Error updating lastActive: $e'));
         
         notifyListeners();
+      } else {
+        debugPrint('Warning: User document not found for $userId - creating one now');
+        // Get the current firebase auth user to create the document
+        final firebaseUser = _firebaseAuth.currentUser;
+        if (firebaseUser != null) {
+          final userData = app_models.User(
+            id: firebaseUser.uid,
+            email: firebaseUser.email ?? '',
+            name: firebaseUser.displayName ?? firebaseUser.email?.split('@')[0] ?? 'User',
+            avatarUrl: firebaseUser.photoURL,
+            level: 1,
+            experience: 0,
+            createdAt: DateTime.now(),
+          );
+          
+          await _firestore.collection('users').doc(firebaseUser.uid).set({
+            ...userData.toJson()..remove('id'),
+            'lastActive': FieldValue.serverTimestamp(),
+          });
+          
+          _currentUser = userData;
+          debugPrint('Created new user document for: ${userData.name}');
+          notifyListeners();
+        } else {
+          _currentUser = null;
+          notifyListeners();
+        }
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
       debugPrint('Error loading user data: $e');
+      debugPrint('Stack trace: $stackTrace');
+      _currentUser = null;
+      notifyListeners();
     }
   }
 
@@ -62,29 +100,77 @@ class AuthService extends ChangeNotifier {
     notifyListeners();
 
     try {
+      debugPrint('Attempting to sign in with email: $email');
       final credential = await _firebaseAuth.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
       
+      debugPrint('Sign in successful, user: ${credential.user?.uid}');
+      
       if (credential.user != null) {
-        // Update last active timestamp
-        await _firestore.collection('users').doc(credential.user!.uid).update({
-          'lastActive': FieldValue.serverTimestamp(),
-        });
-        
         // Check if email is verified
         if (!credential.user!.emailVerified) {
-          _errorMessage = 'EMAIL_NOT_VERIFIED';
+          debugPrint('Email not verified');
+          _errorMessage = 'Please verify your email address before logging in. Check your inbox for the verification link.';
           await _firebaseAuth.signOut();
           _isLoading = false;
           notifyListeners();
           return false;
         }
         
-        await _loadUserData(credential.user!.uid);
+        debugPrint('Email verified, loading user data...');
+        
+        // Try to load/create user data, but don't fail login if Firestore has issues
+        try {
+          final userDoc = await _firestore.collection('users').doc(credential.user!.uid).get();
+          
+          if (!userDoc.exists) {
+            debugPrint('Creating new user document...');
+            final userData = app_models.User(
+              id: credential.user!.uid,
+              email: email,
+              name: credential.user!.displayName ?? email.split('@')[0],
+              level: 1,
+              experience: 0,
+              createdAt: DateTime.now(),
+            );
+            
+            await _firestore.collection('users').doc(credential.user!.uid).set({
+              'email': userData.email,
+              'name': userData.name,
+              'avatarUrl': userData.avatarUrl,
+              'level': userData.level,
+              'experience': userData.experience,
+              'createdAt': userData.createdAt.toIso8601String(),
+              'studyTechnique': userData.studyTechnique,
+              'lastActive': FieldValue.serverTimestamp(),
+            });
+            debugPrint('User document created');
+          } else {
+            debugPrint('User document exists, updating lastActive...');
+            await _firestore.collection('users').doc(credential.user!.uid).update({
+              'lastActive': FieldValue.serverTimestamp(),
+            });
+          }
+          
+          await _loadUserData(credential.user!.uid);
+        } catch (firestoreError) {
+          debugPrint('Firestore error (non-fatal): $firestoreError');
+          // Create a basic user object from Firebase Auth data
+          _currentUser = app_models.User(
+            id: credential.user!.uid,
+            email: credential.user!.email ?? email,
+            name: credential.user!.displayName ?? email.split('@')[0],
+            level: 1,
+            experience: 0,
+            createdAt: DateTime.now(),
+          );
+        }
+        
         _isLoading = false;
         notifyListeners();
+        debugPrint('Login complete, currentUser: ${_currentUser?.name}');
         return true;
       }
       
@@ -96,19 +182,31 @@ class AuthService extends ChangeNotifier {
       
       // Set error code for UI to handle
       if (e.code == 'user-not-found') {
-        _errorMessage = 'USER_NOT_FOUND';
+        _errorMessage = 'No account found with this email address.';
       } else if (e.code == 'wrong-password') {
-        _errorMessage = 'WRONG_PASSWORD';
+        _errorMessage = 'Incorrect password. Please try again.';
+      } else if (e.code == 'invalid-credential') {
+        _errorMessage = 'Invalid email or password. Please check your credentials.';
       } else if (e.code == 'invalid-email') {
-        _errorMessage = 'INVALID_EMAIL';
+        _errorMessage = 'Please enter a valid email address.';
       } else if (e.code == 'user-disabled') {
-        _errorMessage = 'USER_DISABLED';
+        _errorMessage = 'This account has been disabled. Please contact support.';
+      } else if (e.code == 'too-many-requests') {
+        _errorMessage = 'Too many failed attempts. Please try again later.';
       } else {
         _errorMessage = _getFirebaseErrorMessage(e);
       }
       
       notifyListeners();
-      debugPrint('Login error: ${e.message}');
+      debugPrint('Login error: ${e.code} - ${e.message}');
+      return false;
+    } catch (e, stackTrace) {
+      _isLoading = false;
+      debugPrint('Login unexpected error: $e');
+      debugPrint('Stack trace: $stackTrace');
+      // Show actual error for debugging
+      _errorMessage = 'Login failed: ${e.toString().split('\n').first}';
+      notifyListeners();
       return false;
     }
   }
@@ -174,19 +272,25 @@ class AuthService extends ChangeNotifier {
     } on firebase_auth.FirebaseAuthException catch (e) {
       _isLoading = false;
       
-      // Set error code for UI to handle
+      // Set user-friendly error messages
       if (e.code == 'email-already-in-use') {
-        _errorMessage = 'EMAIL_ALREADY_EXISTS';
+        _errorMessage = 'An account already exists with this email address. Please sign in instead.';
       } else if (e.code == 'weak-password') {
-        _errorMessage = 'WEAK_PASSWORD';
+        _errorMessage = 'Password is too weak. Please use at least 6 characters with letters and numbers.';
       } else if (e.code == 'invalid-email') {
-        _errorMessage = 'INVALID_EMAIL';
+        _errorMessage = 'Please enter a valid email address.';
       } else {
         _errorMessage = _getFirebaseErrorMessage(e);
       }
       
       notifyListeners();
-      debugPrint('Registration error: ${e.message}');
+      debugPrint('Registration error: ${e.code} - ${e.message}');
+      return false;
+    } catch (e) {
+      _isLoading = false;
+      _errorMessage = 'Registration failed. Please try again.';
+      notifyListeners();
+      debugPrint('Registration error: $e');
       return false;
     }
   }
@@ -227,26 +331,12 @@ class AuthService extends ChangeNotifier {
           // User already exists!
           await _googleSignIn.signOut();
           _isLoading = false;
-          _errorMessage = 'EMAIL_EXISTS_GOOGLE_METHOD';
+          _errorMessage = 'An account already exists with this email. Please sign in instead.';
           notifyListeners();
           debugPrint('❌ BLOCKED: Account already exists with this email!');
           return false;
         }
         debugPrint('✅ Email not found in Firestore, can proceed with registration');
-      }
-      
-      // Check if email exists with password method
-      final signInMethods = await _firebaseAuth.fetchSignInMethodsForEmail(email);
-      debugPrint('Sign-in methods for $email: $signInMethods');
-      
-      // If email exists with password, prevent Google sign-in/registration
-      if (signInMethods.isNotEmpty && signInMethods.contains('password')) {
-        await _googleSignIn.signOut();
-        _isLoading = false;
-        _errorMessage = 'EMAIL_EXISTS_PASSWORD_METHOD';
-        notifyListeners();
-        debugPrint('❌ BLOCKED: Email already registered with password method');
-        return false;
       }
 
       // Obtain the auth details from the request
@@ -325,21 +415,49 @@ class AuthService extends ChangeNotifier {
       
       // Handle specific Firebase Auth errors
       if (e.code == 'account-exists-with-different-credential') {
-        _errorMessage = 'EMAIL_EXISTS_DIFFERENT_METHOD';
+        _errorMessage = 'This email is already linked to a different sign-in method.';
       } else if (e.code == 'email-already-in-use') {
-        _errorMessage = 'EMAIL_ALREADY_EXISTS';
+        _errorMessage = 'An account already exists with this email address.';
+      } else if (e.code == 'invalid-credential') {
+        _errorMessage = 'Google sign-in failed. Please try again.';
+      } else if (e.code == 'operation-not-allowed') {
+        _errorMessage = 'Google sign-in is not enabled. Please contact support.';
+      } else if (e.code == 'user-disabled') {
+        _errorMessage = 'This account has been disabled.';
       } else {
         _errorMessage = _getFirebaseErrorMessage(e);
       }
       
+      await _googleSignIn.signOut();
       notifyListeners();
       debugPrint('Google Sign-In Firebase error: ${e.code} - ${e.message}');
       return false;
-    } catch (e) {
+    } catch (e, stackTrace) {
       _isLoading = false;
-      _errorMessage = 'GOOGLE_SIGNIN_FAILED';
-      notifyListeners();
+      // Show actual error for debugging
       debugPrint('Google Sign-In error: $e');
+      debugPrint('Stack trace: $stackTrace');
+      
+      String errorMsg = e.toString();
+      if (errorMsg.contains('ApiException: 10')) {
+        _errorMessage = 'Google Sign-In configuration error. SHA-1 fingerprint may be missing in Firebase Console.';
+      } else if (errorMsg.contains('ApiException: 12500')) {
+        _errorMessage = 'Google Sign-In failed. Please update Google Play Services.';
+      } else if (errorMsg.contains('ApiException: 7')) {
+        _errorMessage = 'Network error. Please check your internet connection.';
+      } else if (errorMsg.contains('network_error') || errorMsg.contains('NETWORK_ERROR')) {
+        _errorMessage = 'Network error. Please check your internet connection.';
+      } else if (errorMsg.contains('sign_in_canceled') || errorMsg.contains('canceled')) {
+        _errorMessage = null; // User cancelled, no error to show
+        await _googleSignIn.signOut();
+        notifyListeners();
+        return false;
+      } else {
+        _errorMessage = 'Google Sign-In failed: ${e.toString().split('\n').first}';
+      }
+      
+      await _googleSignIn.signOut();
+      notifyListeners();
       return false;
     }
   }

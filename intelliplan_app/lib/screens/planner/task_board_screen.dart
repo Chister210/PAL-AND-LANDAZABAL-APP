@@ -761,6 +761,504 @@ class _TaskBoardScreenState extends State<TaskBoardScreen> with SingleTickerProv
     );
   }
 
+  // Smart Date Conflict Dialog with Suggestions
+  Future<Map<String, dynamic>?> _showSmartDateConflictDialog(
+    BuildContext context,
+    DateTime selectedDate,
+    List<QueryDocumentSnapshot<Map<String, dynamic>>> existingTasks,
+    List<QueryDocumentSnapshot<Map<String, dynamic>>> allTasks,
+    TimeOfDay? currentTime,
+  ) async {
+    // Find available dates (next 14 days that have no tasks)
+    final availableDates = _findAvailableDates(allTasks, selectedDate, 14);
+    
+    // Find available time slots for the selected date
+    final availableTimeSlots = _findAvailableTimeSlots(existingTasks, currentTime);
+    
+    // Get existing task details for display
+    final existingTaskNames = existingTasks.map((doc) {
+      final data = doc.data();
+      return data['title'] as String? ?? 'Unnamed Task';
+    }).toList();
+
+    DateTime? suggestedDate;
+    TimeOfDay? suggestedTime;
+    
+    return await showDialog<Map<String, dynamic>>(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          backgroundColor: AppTheme.surfaceAlt,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.orange.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 24),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'Date Already Taken!',
+                  style: GoogleFonts.poppins(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.textPrimary,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Show existing tasks on this date
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.red.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.red.withOpacity(0.3)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${existingTasks.length} task(s) on ${DateFormat('EEEE, MMM dd').format(selectedDate)}:',
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.red[300],
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      ...existingTaskNames.take(3).map((name) => Padding(
+                        padding: const EdgeInsets.only(bottom: 4),
+                        child: Row(
+                          children: [
+                            Icon(Icons.circle, size: 6, color: Colors.red[300]),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                name,
+                                style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textSecondary),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      )),
+                      if (existingTaskNames.length > 3)
+                        Text(
+                          '...and ${existingTaskNames.length - 3} more',
+                          style: GoogleFonts.inter(fontSize: 11, color: AppTheme.textSecondary, fontStyle: FontStyle.italic),
+                        ),
+                    ],
+                  ),
+                ),
+                
+                const SizedBox(height: 16),
+                
+                // Suggested Alternative Dates Section
+                Text(
+                  '📅 Suggested Available Dates:',
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: AppTheme.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                
+                // Date suggestion chips with day groups
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    // Show MTW (Mon-Tue-Wed) and ThF (Thu-Fri) groupings
+                    ...availableDates.take(6).map((date) {
+                      final isSelected = suggestedDate != null && 
+                          suggestedDate!.year == date.year &&
+                          suggestedDate!.month == date.month &&
+                          suggestedDate!.day == date.day;
+                      final dayName = DateFormat('E').format(date);
+                      final isMTW = ['Mon', 'Tue', 'Wed'].contains(dayName);
+                      
+                      return GestureDetector(
+                        onTap: () {
+                          setDialogState(() => suggestedDate = date);
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: isSelected 
+                                ? AppTheme.accentPrimary 
+                                : (isMTW ? Colors.blue.withOpacity(0.15) : Colors.purple.withOpacity(0.15)),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: isSelected 
+                                  ? AppTheme.accentPrimary 
+                                  : (isMTW ? Colors.blue.withOpacity(0.5) : Colors.purple.withOpacity(0.5)),
+                              width: isSelected ? 2 : 1,
+                            ),
+                          ),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                dayName,
+                                style: GoogleFonts.inter(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: isSelected ? Colors.white : (isMTW ? Colors.blue[300] : Colors.purple[300]),
+                                ),
+                              ),
+                              Text(
+                                DateFormat('MMM d').format(date),
+                                style: GoogleFonts.inter(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                  color: isSelected ? Colors.white : AppTheme.textPrimary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }),
+                  ],
+                ),
+                
+                const SizedBox(height: 16),
+                
+                // Suggested Time Slots Section
+                Text(
+                  '⏰ Suggested Time Slots:',
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: AppTheme.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                
+                // Time slot chips
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: availableTimeSlots.take(6).map((time) {
+                    final isSelected = suggestedTime != null && 
+                        suggestedTime!.hour == time.hour && 
+                        suggestedTime!.minute == time.minute;
+                    final isMorning = time.hour < 12;
+                    final isAfternoon = time.hour >= 12 && time.hour < 17;
+                    
+                    Color chipColor;
+                    if (isMorning) {
+                      chipColor = Colors.amber;
+                    } else if (isAfternoon) {
+                      chipColor = Colors.orange;
+                    } else {
+                      chipColor = Colors.indigo;
+                    }
+                    
+                    return GestureDetector(
+                      onTap: () {
+                        setDialogState(() => suggestedTime = time);
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: isSelected ? AppTheme.accentSuccess : chipColor.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: isSelected ? AppTheme.accentSuccess : chipColor.withOpacity(0.5),
+                            width: isSelected ? 2 : 1,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              isMorning ? Icons.wb_sunny : (isAfternoon ? Icons.wb_twilight : Icons.nights_stay),
+                              size: 14,
+                              color: isSelected ? Colors.white : chipColor,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              time.format(context),
+                              style: GoogleFonts.inter(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                                color: isSelected ? Colors.white : AppTheme.textPrimary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+                
+                const SizedBox(height: 16),
+                
+                // Quick day group buttons
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildDayGroupButton(
+                        'MTW',
+                        'Mon-Wed',
+                        Colors.blue,
+                        () {
+                          // Find next MTW date
+                          final mtwDate = _findNextDayInGroup(allTasks, ['monday', 'tuesday', 'wednesday']);
+                          if (mtwDate != null) {
+                            setDialogState(() => suggestedDate = mtwDate);
+                          }
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: _buildDayGroupButton(
+                        'ThF',
+                        'Thu-Fri',
+                        Colors.purple,
+                        () {
+                          // Find next ThF date
+                          final thfDate = _findNextDayInGroup(allTasks, ['thursday', 'friday']);
+                          if (thfDate != null) {
+                            setDialogState(() => suggestedDate = thfDate);
+                          }
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: _buildDayGroupButton(
+                        'Weekend',
+                        'Sat-Sun',
+                        Colors.green,
+                        () {
+                          // Find next weekend date
+                          final weekendDate = _findNextDayInGroup(allTasks, ['saturday', 'sunday']);
+                          if (weekendDate != null) {
+                            setDialogState(() => suggestedDate = weekendDate);
+                          }
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+                
+                // Show selected suggestion
+                if (suggestedDate != null || suggestedTime != null) ...[
+                  const SizedBox(height: 16),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: AppTheme.accentSuccess.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppTheme.accentSuccess.withOpacity(0.5)),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.check_circle, color: AppTheme.accentSuccess, size: 20),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Selected: ${suggestedDate != null ? DateFormat('EEE, MMM d').format(suggestedDate!) : DateFormat('EEE, MMM d').format(selectedDate)}${suggestedTime != null ? ' at ${suggestedTime!.format(context)}' : ''}',
+                            style: GoogleFonts.inter(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: AppTheme.accentSuccess,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, null),
+              child: Text('Cancel', style: GoogleFonts.inter(color: AppTheme.textSecondary)),
+            ),
+            TextButton(
+              onPressed: () {
+                // Continue with original date
+                Navigator.pop(dialogContext, {'date': selectedDate, 'time': currentTime});
+              },
+              child: Text('Keep Original', style: GoogleFonts.inter(color: Colors.orange)),
+            ),
+            ElevatedButton(
+              onPressed: (suggestedDate != null || suggestedTime != null) ? () {
+                Navigator.pop(dialogContext, {
+                  'date': suggestedDate ?? selectedDate,
+                  'time': suggestedTime ?? currentTime,
+                });
+              } : null,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.accentSuccess,
+                disabledBackgroundColor: Colors.grey.withOpacity(0.3),
+              ),
+              child: Text(
+                'Use Suggestion',
+                style: GoogleFonts.inter(color: Colors.white),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Helper method to find available dates
+  List<DateTime> _findAvailableDates(
+    List<QueryDocumentSnapshot<Map<String, dynamic>>> allTasks,
+    DateTime startDate,
+    int daysToCheck,
+  ) {
+    final availableDates = <DateTime>[];
+    final now = DateTime.now();
+    
+    for (int i = 1; i <= daysToCheck; i++) {
+      final checkDate = now.add(Duration(days: i));
+      final checkDay = DateTime(checkDate.year, checkDate.month, checkDate.day);
+      
+      final hasTask = allTasks.any((doc) {
+        final data = doc.data();
+        final dueDate = (data['dueDate'] as Timestamp?)?.toDate();
+        if (dueDate == null) return false;
+        return dueDate.year == checkDay.year &&
+               dueDate.month == checkDay.month &&
+               dueDate.day == checkDay.day;
+      });
+      
+      if (!hasTask) {
+        availableDates.add(checkDate);
+      }
+    }
+    
+    return availableDates;
+  }
+
+  // Helper method to find available time slots
+  List<TimeOfDay> _findAvailableTimeSlots(
+    List<QueryDocumentSnapshot<Map<String, dynamic>>> existingTasks,
+    TimeOfDay? currentTime,
+  ) {
+    // Define common study time slots
+    final allTimeSlots = [
+      const TimeOfDay(hour: 8, minute: 0),
+      const TimeOfDay(hour: 9, minute: 0),
+      const TimeOfDay(hour: 10, minute: 0),
+      const TimeOfDay(hour: 11, minute: 0),
+      const TimeOfDay(hour: 13, minute: 0),
+      const TimeOfDay(hour: 14, minute: 0),
+      const TimeOfDay(hour: 15, minute: 0),
+      const TimeOfDay(hour: 16, minute: 0),
+      const TimeOfDay(hour: 17, minute: 0),
+      const TimeOfDay(hour: 18, minute: 0),
+      const TimeOfDay(hour: 19, minute: 0),
+      const TimeOfDay(hour: 20, minute: 0),
+    ];
+    
+    // Get times already taken
+    final takenTimes = existingTasks.map((doc) {
+      final data = doc.data();
+      final dueDate = (data['dueDate'] as Timestamp?)?.toDate();
+      if (dueDate != null) {
+        return TimeOfDay.fromDateTime(dueDate);
+      }
+      return null;
+    }).where((t) => t != null).cast<TimeOfDay>().toList();
+    
+    // Filter out taken times and current time
+    return allTimeSlots.where((slot) {
+      final isTaken = takenTimes.any((taken) => 
+          taken.hour == slot.hour && taken.minute == slot.minute);
+      final isCurrent = currentTime != null && 
+          currentTime.hour == slot.hour && currentTime.minute == slot.minute;
+      return !isTaken && !isCurrent;
+    }).toList();
+  }
+
+  // Helper method to find next available day in a group
+  DateTime? _findNextDayInGroup(
+    List<QueryDocumentSnapshot<Map<String, dynamic>>> allTasks,
+    List<String> dayNames,
+  ) {
+    final now = DateTime.now();
+    
+    for (int i = 1; i <= 14; i++) {
+      final checkDate = now.add(Duration(days: i));
+      final dayName = DateFormat('EEEE').format(checkDate).toLowerCase();
+      
+      if (dayNames.contains(dayName)) {
+        final checkDay = DateTime(checkDate.year, checkDate.month, checkDate.day);
+        final hasTask = allTasks.any((doc) {
+          final data = doc.data();
+          final dueDate = (data['dueDate'] as Timestamp?)?.toDate();
+          if (dueDate == null) return false;
+          return dueDate.year == checkDay.year &&
+                 dueDate.month == checkDay.month &&
+                 dueDate.day == checkDay.day;
+        });
+        
+        if (!hasTask) {
+          return checkDate;
+        }
+      }
+    }
+    return null;
+  }
+
+  // Build day group button widget
+  Widget _buildDayGroupButton(String label, String subtitle, Color color, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: color.withOpacity(0.3)),
+        ),
+        child: Column(
+          children: [
+            Text(
+              label,
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: color,
+              ),
+            ),
+            Text(
+              subtitle,
+              style: GoogleFonts.inter(
+                fontSize: 9,
+                color: color.withOpacity(0.8),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Future<void> _showAddTaskDialog() async {
     final titleController = TextEditingController();
     final subjectController = TextEditingController();
@@ -919,68 +1417,9 @@ class _TaskBoardScreenState extends State<TaskBoardScreen> with SingleTickerProv
                             },
                           );
                           if (date != null && mounted) {
-                            // Check if date is already taken
-                            final userId = context.read<AuthService>().currentUser?.id;
-                            if (userId != null) {
-                              // Get tasks and filter client-side to avoid index requirement
-                              final allTasksSnapshot = await FirebaseFirestore.instance
-                                  .collection('tasks')
-                                  .where('userId', isEqualTo: userId)
-                                  .limit(100)
-                                  .get();
-                              
-                              final selectedDay = DateTime(date.year, date.month, date.day);
-                              final existingTasks = allTasksSnapshot.docs.where((doc) {
-                                final data = doc.data();
-                                final dueDate = (data['dueDate'] as Timestamp?)?.toDate();
-                                if (dueDate == null) return false;
-                                return dueDate.year == selectedDay.year &&
-                                       dueDate.month == selectedDay.month &&
-                                       dueDate.day == selectedDay.day;
-                              }).toList();
-                              
-                              if (existingTasks.isNotEmpty && context.mounted) {
-                                final proceed = await showDialog<bool>(
-                                  context: context,
-                                  builder: (dialogContext) => AlertDialog(
-                                    backgroundColor: AppTheme.surfaceAlt,
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                                    title: Text(
-                                      'Date Already Taken',
-                                      style: GoogleFonts.poppins(
-                                        color: AppTheme.textPrimary,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    content: Text(
-                                      '${existingTasks.length} task(s) already scheduled for ${DateFormat('MMM dd, yyyy').format(date)}. Do you want to add another task on this date?',
-                                      style: GoogleFonts.inter(color: AppTheme.textSecondary),
-                                    ),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () => Navigator.pop(dialogContext, false),
-                                        child: Text('Choose Different Date', style: GoogleFonts.inter(color: AppTheme.textSecondary)),
-                                      ),
-                                      ElevatedButton(
-                                        onPressed: () => Navigator.pop(dialogContext, true),
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: AppTheme.accentPrimary,
-                                        ),
-                                        child: Text('Continue Anyway', style: GoogleFonts.inter(color: Colors.white)),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                                
-                                if (proceed == true) {
-                                  setState(() => selectedDate = date);
-                                }
-                              } else {
-                                setState(() => selectedDate = date);
-                              }
-                            } else {
-                              setState(() => selectedDate = date);
-                            }
+                            // Allow multiple tasks with the same date/time - no conflict blocking
+                            // Users can set simultaneous deadlines for different subjects
+                            setState(() => selectedDate = date);
                           }
                         },
                         child: Container(
@@ -1196,21 +1635,6 @@ class _TaskBoardScreenState extends State<TaskBoardScreen> with SingleTickerProv
                   await FirebaseFirestore.instance.collection('tasks').doc(taskId).set(taskData);
                   debugPrint('\u2705 Saved to top-level collection');
                   debugPrint('\u2705 TASK CREATED SUCCESSFULLY IN BOTH COLLECTIONS!');
-
-                  // Schedule notifications for the task (works even when app is closed)
-                  final notificationService = NotificationService();
-                  await notificationService.scheduleTaskDeadlineNotification(
-                    taskId: taskId,
-                    taskTitle: titleController.text.trim(),
-                    deadline: taskDeadline,
-                    subject: finalSubject.isNotEmpty ? finalSubject : null,
-                  );
-                  await notificationService.scheduleTaskTodayReminder(
-                    taskId: taskId,
-                    taskTitle: titleController.text.trim(),
-                    dueDate: taskDeadline,
-                    subject: finalSubject.isNotEmpty ? finalSubject : null,
-                  );
 
                   // Track achievement
                   if (mounted) {
@@ -1521,10 +1945,6 @@ class _TaskBoardScreenState extends State<TaskBoardScreen> with SingleTickerProv
       try {
         await FirebaseFirestore.instance.collection('tasks').doc(taskId).delete();
         
-        // Cancel scheduled notifications for this task
-        final notificationService = NotificationService();
-        await notificationService.cancelTaskNotifications(taskId);
-        
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('$title deleted')),
@@ -1617,12 +2037,6 @@ class _TaskBoardScreenState extends State<TaskBoardScreen> with SingleTickerProv
         } catch (e) {
           debugPrint('⚠️ User subcollection update failed (task may not exist there): $e');
         }
-      }
-
-      // Cancel notifications when task is completed
-      if (newStatus == 'completed') {
-        final notificationService = NotificationService();
-        await notificationService.cancelTaskNotifications(taskId);
       }
 
       // Track achievement for task completion

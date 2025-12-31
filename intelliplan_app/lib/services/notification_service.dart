@@ -660,12 +660,132 @@ class NotificationService {
           playSound: true,
           enableVibration: true,
         );
+
+        // Subject class reminders channel
+        const subjectChannel = AndroidNotificationChannel(
+          'subject_reminders_channel',
+          'Subject Class Reminders',
+          description: 'Notifications for upcoming subject classes',
+          importance: Importance.high,
+          playSound: true,
+          enableVibration: true,
+        );
         
         await androidImplementation.createNotificationChannel(deadlineChannel);
         await androidImplementation.createNotificationChannel(todayChannel);
+        await androidImplementation.createNotificationChannel(subjectChannel);
         
-        debugPrint('✅ Task notification channels created');
+        debugPrint('✅ Task and subject notification channels created');
       }
+    }
+  }
+
+  // ==================== SUBJECT NOTIFICATIONS ====================
+
+  /// Schedule a reminder notification for a subject class
+  /// This will show a notification 30 minutes before class starts
+  Future<void> scheduleSubjectClassNotification({
+    required String subjectId,
+    required String subjectName,
+    required String startTime, // HH:mm format
+    required List<String> weekdays, // e.g., ['Mon', 'Tue', 'Wed']
+    int minutesBefore = 30,
+  }) async {
+    try {
+      final androidDetails = AndroidNotificationDetails(
+        'subject_reminders_channel',
+        'Subject Class Reminders',
+        channelDescription: 'Notifications for upcoming subject classes',
+        importance: Importance.high,
+        priority: Priority.high,
+        playSound: true,
+        enableVibration: true,
+        icon: '@mipmap/ic_launcher',
+      );
+      
+      const iosDetails = DarwinNotificationDetails(
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true,
+      );
+      
+      final notificationDetails = NotificationDetails(
+        android: androidDetails,
+        iOS: iosDetails,
+      );
+
+      // Parse start time
+      final timeParts = startTime.split(':');
+      final hour = int.parse(timeParts[0]);
+      final minute = int.parse(timeParts[1]);
+
+      // Schedule for each weekday the subject is on
+      final weekdayMap = {
+        'Sun': DateTime.sunday,
+        'Mon': DateTime.monday,
+        'Tue': DateTime.tuesday,
+        'Wed': DateTime.wednesday,
+        'Thu': DateTime.thursday,
+        'Fri': DateTime.friday,
+        'Sat': DateTime.saturday,
+      };
+
+      for (final day in weekdays) {
+        final targetWeekday = weekdayMap[day];
+        if (targetWeekday == null) continue;
+
+        // Calculate next occurrence of this weekday
+        final now = DateTime.now();
+        int daysUntil = targetWeekday - now.weekday;
+        if (daysUntil <= 0) daysUntil += 7; // Schedule for next week if today already passed
+
+        final nextOccurrence = DateTime(
+          now.year,
+          now.month,
+          now.day + daysUntil,
+          hour,
+          minute,
+        ).subtract(Duration(minutes: minutesBefore));
+
+        // Only schedule if notification time is in the future
+        if (nextOccurrence.isBefore(DateTime.now())) {
+          continue;
+        }
+
+        // Create unique notification ID based on subject ID and weekday
+        final notificationId = '${subjectId}_$day'.hashCode;
+
+        await _localNotifications.zonedSchedule(
+          notificationId,
+          '📚 Class Starting Soon',
+          '$subjectName class starts in $minutesBefore minutes!',
+          _convertToTZDateTime(nextOccurrence),
+          notificationDetails,
+          androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+          uiLocalNotificationDateInterpretation:
+              UILocalNotificationDateInterpretation.absoluteTime,
+          matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
+          payload: 'subject_reminder:$subjectId',
+        );
+        
+        debugPrint('✅ Scheduled class reminder for $subjectName on $day at ${nextOccurrence.toString()}');
+      }
+    } catch (e) {
+      debugPrint('❌ Error scheduling subject notification: $e');
+    }
+  }
+
+  /// Cancel all notifications for a specific subject
+  Future<void> cancelSubjectNotifications(String subjectId, List<String> weekdays) async {
+    try {
+      for (final day in weekdays) {
+        final notificationId = '${subjectId}_$day'.hashCode;
+        await _localNotifications.cancel(notificationId);
+      }
+      
+      debugPrint('✅ Cancelled notifications for subject: $subjectId');
+    } catch (e) {
+      debugPrint('❌ Error cancelling subject notifications: $e');
     }
   }
 }

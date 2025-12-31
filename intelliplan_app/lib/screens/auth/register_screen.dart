@@ -5,7 +5,6 @@ import 'package:lottie/lottie.dart';
 import '../../services/auth_service.dart';
 import '../../widgets/password_strength_indicator.dart';
 import '../../utils/password_validator.dart';
-import '../../widgets/animated_error_dialog.dart';
 import '../../widgets/email_verification_dialog.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -128,19 +127,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
           ),
         );
       } else if (mounted && authService.errorMessage != null) {
-        // Check if it's a special error code that needs animated dialog
-        final errorCode = authService.errorMessage!;
-        if (_isErrorCode(errorCode)) {
-          AnimatedErrorDialog.show(context, errorCode);
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(errorCode),
-              backgroundColor: Colors.red,
-              duration: const Duration(seconds: 4),
-            ),
-          );
-        }
+        // Show user-friendly error message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(authService.errorMessage!),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 4),
+          ),
+        );
       }
     }
   }
@@ -152,29 +146,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (success && mounted) {
       context.go('/'); // Navigate to new home screen
     } else if (mounted && authService.errorMessage != null) {
-      // Check if it's a special error code that needs animated dialog
-      final errorCode = authService.errorMessage!;
-      if (_isErrorCode(errorCode)) {
-        AnimatedErrorDialog.show(context, errorCode);
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(errorCode),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+      // Show user-friendly error message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(authService.errorMessage!),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 4),
+        ),
+      );
     }
-  }
-
-  bool _isErrorCode(String message) {
-    return message == 'EMAIL_ALREADY_EXISTS' ||
-        message == 'WEAK_PASSWORD' ||
-        message == 'INVALID_EMAIL' ||
-        message == 'GOOGLE_SIGNIN_FAILED' ||
-        message == 'EMAIL_EXISTS_DIFFERENT_METHOD' ||
-        message == 'EMAIL_EXISTS_PASSWORD_METHOD' ||
-        message == 'EMAIL_EXISTS_GOOGLE_METHOD';
   }
 
   @override

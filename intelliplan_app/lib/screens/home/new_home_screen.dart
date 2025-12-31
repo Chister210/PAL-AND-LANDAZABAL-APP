@@ -370,6 +370,9 @@ class _NewHomeScreenState extends State<NewHomeScreen> {
     final lastDayOfMonth = DateTime(now.year, now.month + 1, 0);
     final daysInMonth = lastDayOfMonth.day;
     final startWeekday = firstDayOfMonth.weekday % 7;
+    
+    final authService = context.watch<AuthService>();
+    final userId = authService.currentUser?.id;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -406,150 +409,183 @@ class _NewHomeScreenState extends State<NewHomeScreen> {
             }).toList(),
           ),
           const SizedBox(height: 8),
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 7,
-              mainAxisSpacing: 8,
-              crossAxisSpacing: 8,
-            ),
-            itemCount: startWeekday + daysInMonth,
-            itemBuilder: (context, index) {
-              if (index < startWeekday) {
-                return const SizedBox();
+          // Use StreamBuilder to get tasks for deadline indicators
+          StreamBuilder<QuerySnapshot>(
+            stream: userId != null 
+                ? FirebaseFirestore.instance
+                    .collection('tasks')
+                    .where('userId', isEqualTo: userId)
+                    .snapshots()
+                : null,
+            builder: (context, taskSnapshot) {
+              // Extract dates that have task deadlines
+              final Set<String> datesWithDeadlines = {};
+              if (taskSnapshot.hasData && taskSnapshot.data != null) {
+                for (var doc in taskSnapshot.data!.docs) {
+                  final data = doc.data() as Map<String, dynamic>;
+                  final dueDate = (data['dueDate'] as Timestamp?)?.toDate();
+                  if (dueDate != null) {
+                    // Store as string key for easy lookup
+                    datesWithDeadlines.add('${dueDate.year}-${dueDate.month}-${dueDate.day}');
+                  }
+                }
               }
               
-              final day = index - startWeekday + 1;
-              final isToday = day == now.day;
-              final date = DateTime(now.year, now.month, day);
-              final isSelected = _selectedDate.year == date.year &&
-                  _selectedDate.month == date.month &&
-                  _selectedDate.day == date.day;
-
-              return GestureDetector(
-                onTap: () async {
-                  setState(() {
-                    _selectedDate = date;
-                  });
+              return GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 7,
+                  mainAxisSpacing: 8,
+                  crossAxisSpacing: 8,
+                ),
+                itemCount: startWeekday + daysInMonth,
+                itemBuilder: (context, index) {
+                  if (index < startWeekday) {
+                    return const SizedBox();
+                  }
                   
-                  // Show tasks for selected date
-                  final authService = context.read<AuthService>();
-                  final userId = authService.currentUser?.id;
-                  if (userId != null) {
-                    final tasksSnapshot = await FirebaseFirestore.instance
-                        .collection('tasks')
-                        .where('userId', isEqualTo: userId)
-                        .where('dueDate', isGreaterThanOrEqualTo: Timestamp.fromDate(DateTime(date.year, date.month, date.day)))
-                        .where('dueDate', isLessThan: Timestamp.fromDate(DateTime(date.year, date.month, date.day + 1)))
-                        .get();
-                    
-                    if (mounted) {
-                      showDialog(
-                        context: context,
-                        builder: (dialogContext) => AlertDialog(
-                          backgroundColor: AppTheme.surfaceAlt,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                          title: Text(
-                            'Tasks for ${DateFormat('MMM dd, yyyy').format(date)}',
-                            style: GoogleFonts.poppins(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          content: tasksSnapshot.docs.isEmpty
-                              ? Text(
-                                  'No tasks scheduled for this date.',
-                                  style: GoogleFonts.inter(color: Colors.white),
-                                )
-                              : SizedBox(
-                                  width: double.maxFinite,
-                                  child: ListView.builder(
-                                    shrinkWrap: true,
-                                    itemCount: tasksSnapshot.docs.length,
-                                    itemBuilder: (context, index) {
-                                      final taskData = tasksSnapshot.docs[index].data();
-                                      return Card(
-                                        color: AppTheme.surfaceHigh,
-                                        margin: const EdgeInsets.only(bottom: 8),
-                                        child: ListTile(
-                                          leading: Icon(
-                                            Icons.task_alt,
-                                            color: taskData['status'] == 'completed'
-                                                ? AppTheme.accentSuccess
-                                                : AppTheme.accentPrimary,
-                                          ),
-                                          title: Text(
-                                            taskData['title'] ?? 'Untitled',
-                                            style: GoogleFonts.inter(
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ),
-                                          subtitle: Text(
-                                            '${taskData['subject'] ?? 'General'} • ${taskData['priority'] ?? 'medium'} priority',
-                                            style: GoogleFonts.inter(
-                                              color: AppTheme.textSecondary,
-                                              fontSize: 12,
-                                            ),
-                                          ),
-                                          trailing: Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                            decoration: BoxDecoration(
-                                              color: taskData['status'] == 'completed'
-                                                  ? AppTheme.accentSuccess.withOpacity(0.2)
-                                                  : taskData['status'] == 'in_progress'
-                                                      ? AppTheme.accentWarning.withOpacity(0.2)
-                                                      : AppTheme.accentPrimary.withOpacity(0.2),
-                                              borderRadius: BorderRadius.circular(12),
-                                            ),
-                                            child: Text(
-                                              taskData['status']?.toString().replaceAll('_', ' ').toUpperCase() ?? 'PENDING',
-                                              style: GoogleFonts.inter(
-                                                color: Colors.white,
-                                                fontSize: 10,
-                                                fontWeight: FontWeight.bold,
+                  final day = index - startWeekday + 1;
+                  final isToday = day == now.day;
+                  final date = DateTime(now.year, now.month, day);
+                  final isSelected = _selectedDate.year == date.year &&
+                      _selectedDate.month == date.month &&
+                      _selectedDate.day == date.day;
+                  
+                  // Check if this date has a deadline
+                  final dateKey = '${date.year}-${date.month}-${date.day}';
+                  final hasDeadline = datesWithDeadlines.contains(dateKey);
+
+                  return GestureDetector(
+                    onTap: () async {
+                      setState(() {
+                        _selectedDate = date;
+                      });
+                      
+                      // Show tasks for selected date
+                      if (userId != null) {
+                        final tasksSnapshot = await FirebaseFirestore.instance
+                            .collection('tasks')
+                            .where('userId', isEqualTo: userId)
+                            .where('dueDate', isGreaterThanOrEqualTo: Timestamp.fromDate(DateTime(date.year, date.month, date.day)))
+                            .where('dueDate', isLessThan: Timestamp.fromDate(DateTime(date.year, date.month, date.day + 1)))
+                            .get();
+                        
+                        if (mounted) {
+                          showDialog(
+                            context: context,
+                            builder: (dialogContext) => AlertDialog(
+                              backgroundColor: AppTheme.surfaceAlt,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                              title: Text(
+                                'Tasks for ${DateFormat('MMM dd, yyyy').format(date)}',
+                                style: GoogleFonts.poppins(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              content: tasksSnapshot.docs.isEmpty
+                                  ? Text(
+                                      'No tasks scheduled for this date.',
+                                      style: GoogleFonts.inter(color: Colors.white),
+                                    )
+                                  : SizedBox(
+                                      width: double.maxFinite,
+                                      child: ListView.builder(
+                                        shrinkWrap: true,
+                                        itemCount: tasksSnapshot.docs.length,
+                                        itemBuilder: (context, index) {
+                                          final taskData = tasksSnapshot.docs[index].data();
+                                          return Card(
+                                            color: AppTheme.surfaceHigh,
+                                            margin: const EdgeInsets.only(bottom: 8),
+                                            child: ListTile(
+                                              leading: Icon(
+                                                Icons.task_alt,
+                                                color: taskData['status'] == 'completed'
+                                                    ? AppTheme.accentSuccess
+                                                    : AppTheme.accentPrimary,
+                                              ),
+                                              title: Text(
+                                                taskData['title'] ?? 'Untitled',
+                                                style: GoogleFonts.inter(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
+                                              subtitle: Text(
+                                                '${taskData['subject'] ?? 'General'} • ${taskData['priority'] ?? 'medium'} priority',
+                                                style: GoogleFonts.inter(
+                                                  color: AppTheme.textSecondary,
+                                                  fontSize: 12,
+                                                ),
+                                              ),
+                                              trailing: Container(
+                                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                                decoration: BoxDecoration(
+                                                  color: taskData['status'] == 'completed'
+                                                      ? AppTheme.accentSuccess.withOpacity(0.2)
+                                                      : taskData['status'] == 'in_progress'
+                                                          ? AppTheme.accentWarning.withOpacity(0.2)
+                                                          : AppTheme.accentPrimary.withOpacity(0.2),
+                                                  borderRadius: BorderRadius.circular(12),
+                                                ),
+                                                child: Text(
+                                                  taskData['status']?.toString().replaceAll('_', ' ').toUpperCase() ?? 'PENDING',
+                                                  style: GoogleFonts.inter(
+                                                    color: Colors.white,
+                                                    fontSize: 10,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
                                               ),
                                             ),
-                                          ),
-                                        ),
-                                      );
-                                    },
+                                          );
+                                        },
+                                      ),
+                                    ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(dialogContext),
+                                  child: Text(
+                                    'Close',
+                                    style: GoogleFonts.inter(color: Colors.white),
                                   ),
                                 ),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(dialogContext),
-                              child: Text(
-                                'Close',
-                                style: GoogleFonts.inter(color: Colors.white),
-                              ),
+                              ],
                             ),
-                          ],
+                          );
+                        }
+                      }
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        // Red background for dates with deadlines, otherwise normal styling
+                        color: isSelected
+                            ? AppTheme.accentPrimary
+                            : hasDeadline
+                                ? Colors.red.withOpacity(0.7)
+                                : isToday
+                                    ? AppTheme.accentPrimary.withOpacity(0.3)
+                                    : Colors.transparent,
+                        shape: BoxShape.circle,
+                        // Add red border for better visibility on deadline dates
+                        border: hasDeadline && !isSelected
+                            ? Border.all(color: Colors.red, width: 2)
+                            : null,
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        '$day',
+                        style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: isToday || isSelected || hasDeadline ? FontWeight.bold : FontWeight.normal,
                         ),
-                      );
-                    }
-                  }
-                },
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? AppTheme.accentPrimary
-                        : isToday
-                            ? AppTheme.accentPrimary.withOpacity(0.3)
-                            : Colors.transparent,
-                    shape: BoxShape.circle,
-                  ),
-                  alignment: Alignment.center,
-                  child: Text(
-                    '$day',
-                    style: GoogleFonts.inter(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontWeight: isToday || isSelected ? FontWeight.bold : FontWeight.normal,
+                      ),
                     ),
-                  ),
-                ),
+                  );
+                },
               );
             },
           ),
@@ -1431,7 +1467,7 @@ class _NewHomeScreenState extends State<NewHomeScreen> {
                         ),
                       ),
                       const SizedBox(height: 12),
-                      // Action buttons (Edit, Delete, Attach)
+                      // Action buttons Row 1 (Edit, Delete, Attach)
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
@@ -1450,6 +1486,25 @@ class _NewHomeScreenState extends State<NewHomeScreen> {
                             icon: Icons.attach_file_outlined,
                             label: 'Attach',
                             onTap: () => _attachFilesToSubject(subject),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      // Action buttons Row 2 (Notifications, Suggestions)
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          _subjectActionButton(
+                            icon: Icons.notifications_outlined,
+                            label: 'Notify',
+                            color: Colors.orange,
+                            onTap: () => _showSubjectNotificationSettings(subject),
+                          ),
+                          _subjectActionButton(
+                            icon: Icons.lightbulb_outlined,
+                            label: 'Tips',
+                            color: Colors.amber,
+                            onTap: () => _showSubjectSuggestions(subject),
                           ),
                         ],
                       ),
@@ -1579,6 +1634,20 @@ class _NewHomeScreenState extends State<NewHomeScreen> {
             onPressed: () async {
               Navigator.of(context).pop();
               final subjectService = context.read<SubjectService>();
+              
+              // Get subject to cancel its notifications
+              final subject = subjectService.subjects.firstWhere(
+                (s) => s.id == subjectId,
+                orElse: () => throw 'Subject not found',
+              );
+              
+              // Cancel notifications for this subject
+              final notificationService = NotificationService();
+              await notificationService.cancelSubjectNotifications(
+                subjectId,
+                subject.weekdays,
+              );
+              
               await subjectService.deleteSubject(subjectId);
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -1613,6 +1682,249 @@ class _NewHomeScreenState extends State<NewHomeScreen> {
     showDialog(
       context: context,
       builder: (context) => AddSubjectDialog(subject: subject),
+    );
+  }
+
+  // Subject Notification Settings Dialog
+  void _showSubjectNotificationSettings(subject) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: AppTheme.surfaceAlt,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.orange.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(Icons.notifications, color: Colors.orange, size: 24),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'Notifications for ${subject.name}',
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.textPrimary,
+                ),
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildNotificationOption(
+              'Class Reminders',
+              'Get notified 30 minutes before class',
+              Icons.access_time,
+              true,
+            ),
+            const SizedBox(height: 12),
+            _buildNotificationOption(
+              'Assignment Due',
+              'Reminder for upcoming deadlines',
+              Icons.assignment_late,
+              true,
+            ),
+            const SizedBox(height: 12),
+            _buildNotificationOption(
+              'Study Sessions',
+              'Recommended study time alerts',
+              Icons.school,
+              false,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text('Close', style: GoogleFonts.inter(color: AppTheme.textSecondary)),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(dialogContext);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Notification settings saved for ${subject.name}'),
+                  backgroundColor: Colors.green,
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.accentPrimary),
+            child: Text('Save', style: GoogleFonts.inter(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNotificationOption(String title, String subtitle, IconData icon, bool enabled) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceHigh,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: enabled ? AppTheme.accentPrimary : AppTheme.textSecondary, size: 24),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: AppTheme.textPrimary,
+                  ),
+                ),
+                Text(
+                  subtitle,
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    color: AppTheme.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Switch(
+            value: enabled,
+            onChanged: (value) {},
+            activeColor: AppTheme.accentPrimary,
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Subject Study Suggestions Dialog
+  void _showSubjectSuggestions(subject) {
+    final analyticsService = context.read<AnalyticsService>();
+    final recommendations = analyticsService.recommendations;
+    
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: AppTheme.surfaceAlt,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.amber.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(Icons.lightbulb, color: Colors.amber, size: 24),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'Study Tips for ${subject.name}',
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.textPrimary,
+                ),
+              ),
+            ),
+          ],
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Personalized suggestions based on subject type
+              _buildSuggestionCard(
+                '📚 Best Study Time',
+                subject.fieldOfStudy == 'Major Subject'
+                    ? 'Major subjects need 2-3 hour deep focus sessions. Try morning hours for better retention.'
+                    : 'Minor subjects work well with shorter 45-60 minute sessions.',
+                Colors.blue,
+              ),
+              const SizedBox(height: 12),
+              _buildSuggestionCard(
+                '🎯 Recommended Technique',
+                subject.fieldOfStudy == 'Major Subject'
+                    ? 'Use Pomodoro (25 min focus + 5 min break) for intense study sessions.'
+                    : 'Active Recall works great for minor subjects - test yourself frequently!',
+                Colors.green,
+              ),
+              const SizedBox(height: 12),
+              _buildSuggestionCard(
+                '📅 Schedule Suggestion',
+                'Based on your class days (${subject.weekdaysDisplay}), try studying this subject on alternate days for spaced repetition.',
+                Colors.purple,
+              ),
+              const SizedBox(height: 12),
+              _buildSuggestionCard(
+                '⏰ Optimal Time Slot',
+                recommendations.isNotEmpty
+                    ? 'Your peak productivity: ${recommendations.first.timeSlot}'
+                    : 'Complete more study sessions to get personalized time recommendations.',
+                Colors.orange,
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text('Close', style: GoogleFonts.inter(color: AppTheme.textSecondary)),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(dialogContext);
+              context.go('/analytics');
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.accentPrimary),
+            child: Text('View Analytics', style: GoogleFonts.inter(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSuggestionCard(String title, String description, Color color) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: GoogleFonts.poppins(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: color,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            description,
+            style: GoogleFonts.inter(
+              fontSize: 13,
+              color: AppTheme.textPrimary,
+            ),
+          ),
+        ],
+      ),
     );
   }
 

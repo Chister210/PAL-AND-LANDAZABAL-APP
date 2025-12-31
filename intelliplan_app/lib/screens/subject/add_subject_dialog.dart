@@ -7,6 +7,7 @@ import '../../config/theme.dart';
 import '../../models/subject.dart';
 import '../../services/subject_service.dart';
 import '../../services/auth_service.dart';
+import '../../services/notification_service.dart';
 
 class AddSubjectDialog extends StatefulWidget {
   final Subject? subject; // For editing existing subject
@@ -142,8 +143,24 @@ class _AddSubjectDialogState extends State<AddSubjectDialog> {
       if (widget.subject == null) {
         await subjectService.addSubject(subject);
       } else {
+        // Cancel old notifications if weekdays or time changed
+        final notificationService = NotificationService();
+        await notificationService.cancelSubjectNotifications(
+          widget.subject!.id, 
+          widget.subject!.weekdays,
+        );
         await subjectService.updateSubject(subject);
       }
+
+      // Schedule notifications for subject class reminders
+      final notificationService = NotificationService();
+      await notificationService.scheduleSubjectClassNotification(
+        subjectId: subject.id,
+        subjectName: subject.name,
+        startTime: subject.startTime,
+        weekdays: subject.weekdays,
+        minutesBefore: 30,
+      );
 
       if (mounted) {
         Navigator.pop(context, true);
